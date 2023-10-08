@@ -11,6 +11,12 @@ const main = async () => {
 
   await page.waitForSelector('.ytp-caption-segment');
 
+  const button = await page.evaluate('document.querySelector("button.ytp-subtitles-button").getAttribute("aria-pressed")');
+
+  if(button === 'false'){
+    await page.click('.ytp-subtitles-button');
+  }
+  
 
   const captureAndSaveWord = async () => {
     const data = await page.$eval(
