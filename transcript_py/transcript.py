@@ -1,65 +1,38 @@
-# import speech_recognition as sr
-
-# r = sr.Recognizer()
-
-# mic = sr.Microphone()
-
-# with mic as source:
-#     r.adjust_for_ambient_noise(source) 
-#     audio = r.listen(source)
-#     print("Trascrizione: " + r.recognize_google(audio, language="it-IT"))
-
-# import speech_recognition as sr
-
-# r = sr.Recognizer()
-# mic = sr.Microphone()
-
-# with mic as source:
-#     r.adjust_for_ambient_noise(source)
-
-#     print("In ascolto...")
-
-#     while True:
-#         audio = r.listen(source)
-
-#         try:
-#             transcription = r.recognize_google(audio, language="it-IT")
-#             print("Trascrizione in tempo reale:", transcription)
-#         except sr.UnknownValueError:
-#             print("Nessun audio rilevato.")
-#         except sr.RequestError as e:
-#             print(f"Errore nella richiesta di riconoscimento vocale: {e}")
-
 
 import speech_recognition as sr
+import time
 
-def recognize(recognizer, microphone):
-    if not isinstance(recognizer, sr.Recognizer):
-        raise TypeError("`recognizer` must be `Recognizer` instance")
+r = sr.Recognizer()
+mic = sr.Microphone(device_index=0)
+timeout = 10
+timeout_start = time.time()
+print(sr.Microphone.list_microphone_names())
 
-    if not isinstance(microphone, sr.Microphone):
-        raise TypeError("`microphone` must be `Microphone` instance")
+response = {
+    "success": True,
+    "error": None,
+    "transcription": None
+}
 
-    with microphone as source:
-        recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
+with mic as source:
+    r.adjust_for_ambient_noise(source)
+    print("In ascolto...")
 
-    response = {
-        "success" : True,
-        "error" : None, 
-        "transcription" : None
-    }
+    while time.time() < timeout_start + timeout:
+        audio = r.listen(source)
 
-    try:
-        response["transcription"] = recognizer.recognize_google(audio)
-    except sr.RequestError:
-        response["success"] = False
-        response["error"] = "API unavailable"
-    except sr.UnknownValueError:
-        response["error"] = "Unable to recognize speech"
-    
-    return response
+        try:
+            transcription = r.recognize_google(audio, language="it-IT")
+            print("Hai detto:", transcription)
+            response["transcription"] = transcription
 
-if __name__ == "__main__":
-    recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
+            # Salvataggio della trascrizione in un file di testo
+            with open("trascrizione.txt", "a") as file:
+                file.write(transcription + "\n")
+        except sr.RequestError:
+            response["success"] = False
+            response["error"] = "API unavailable"
+        except sr.UnknownValueError:
+            response["error"] = "Unable to recognize speech"
+
+print("Risposta:", response)
