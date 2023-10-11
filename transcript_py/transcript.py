@@ -1,17 +1,14 @@
-
 import speech_recognition as sr
 import time
+import json
 
 r = sr.Recognizer()
 mic = sr.Microphone(device_index=0)
 timeout = 10
 timeout_start = time.time()
-print(sr.Microphone.list_microphone_names())
 
 response = {
-    "success": True,
-    "error": None,
-    "transcription": None
+    "transcription": []
 }
 
 with mic as source:
@@ -20,19 +17,26 @@ with mic as source:
 
     while time.time() < timeout_start + timeout:
         audio = r.listen(source)
-
         try:
-            transcription = r.recognize_google(audio, language="it-IT")
+            start_time = time.time()  
+            transcription = r.recognize_whisper(audio, "tiny", False, None, "it", False)
+            end_time = time.time()  
+            transcription_duration = end_time - start_time  
+
             print("Hai detto:", transcription)
-            response["transcription"] = transcription
+            print("Durata della trascrizione: {} secondi".format(transcription_duration))
 
-            # Salvataggio della trascrizione in un file di testo
-            with open("trascrizione.txt", "a") as file:
-                file.write(transcription + "\n")
-        except sr.RequestError:
-            response["success"] = False
-            response["error"] = "API unavailable"
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            response["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
+
+            
+            with open("transcription.json", "w") as output:
+                json.dump(response, output, indent=2)
+
+            print("Risposta:", response)
         except sr.UnknownValueError:
-            response["error"] = "Unable to recognize speech"
+            print("Nessun input vocale rilevato.")
+        except sr.RequestError as e:
+            print("Errore di connessione al servizio di riconoscimento vocale: {0}".format(e))
 
-print("Risposta:", response)
+    print("Rilevamento terminato. Trascrizione salvata in 'transcription.json'")
