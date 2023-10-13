@@ -15,25 +15,26 @@ with mic as source:
     r.adjust_for_ambient_noise(source)
     print("In ascolto...")
 
-    while time.time() < timeout_start + timeout:
+    
+    while True:
         audio = r.listen(source)
         try:
             start_time = time.time()  
-            transcription = r.recognize_whisper(audio, "tiny", False, None, "it", False)
+            #transcription = r.recognize_whisper_api(audio,"whisper-1", "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")
+            transcription = r.recognize_whisper(audio, "medium", False, None, "it", False)
             end_time = time.time()  
             transcription_duration = end_time - start_time  
 
             print("Hai detto:", transcription)
-            print("Durata della trascrizione: {} secondi".format(transcription_duration))
+            #print("Durata della trascrizione: {} secondi".format(transcription_duration))
 
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
             response["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
 
-            
             with open("transcription.json", "w") as output:
                 json.dump(response, output, indent=2)
 
-            print("Risposta:", response)
+            #print("Risposta:", response)
         except sr.UnknownValueError:
             print("Nessun input vocale rilevato.")
         except sr.RequestError as e:
