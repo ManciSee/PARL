@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.4.1
+    image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -12,11 +12,12 @@ services:
     networks:
       - network
   
-  transcription-container:
-    build: ./transcript/
-    networks:
-      - network
-    container_name: "transcription-container"
+  # transcription-container:
+  #   build: ./speech-to-text/
+  #   networks:
+  #     - network
+  #   container_name: "transcription-container"
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafkaWebUI
@@ -32,7 +33,7 @@ services:
         - kafka
 
   kafka:
-    image: confluentinc/cp-kafka:5.4.1
+    image: confluentinc/cp-kafka:latest
     container_name: kafka
     depends_on:
       - zookeeper
@@ -41,7 +42,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: music:1:1
+      KAFKA_CREATE_TOPICS: speech:1:1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:39092,HOST://0.0.0.0:9092
@@ -52,7 +53,7 @@ services:
       - network
 
   fluentbit:
-    image: fluent/fluent-bit:1.8
+    image: fluent/fluent-bit:latest
     ports: 
       - 9090:9090
     volumes:
