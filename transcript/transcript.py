@@ -2,13 +2,13 @@ import io
 import speech_recognition as sr
 import time
 import json
-import wave
-import requests  # Aggiunto il modulo requests
+import requests
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
 recording = False
+transcription_data = []  # Lista per memorizzare le trascrizioni
 
 @app.route('/')
 def index():
@@ -38,17 +38,24 @@ def start_recording():
 
                 timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
                 response = {
-                    "transcription": []
+                    "timestamp": timestamp,
+                    "text": transcription,
+                    "duration": transcription_duration
                 }
-                response["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
 
-                with open("transcription.json", "w") as output:
-                    json.dump(response, output, indent=2)
+                # Aggiungi la trascrizione alla lista di trascrizioni
+                transcription_data.append(response)
+
+                # Salva i dati in un file JSON
+                with open("transcription.json", "a") as output:
+                    json.dump(transcription_data, output, indent=2)
 
                 # Invia i dati a Fluent Bit sulla porta 9090
                 fluent_bit_url = 'http://fluent-bit:9090'  # Assumi che Fluent Bit sia in esecuzione sullo stesso host
                 try:
-                    response = requests.post(fluent_bit_url, json=response)
+                    response_json = json.dumps(response)
+                    headers = {'Content-Type': 'application/json'}
+                    response = requests.post(fluent_bit_url, data=response_json, headers=headers)
                     if response.status_code == 200:
                         print("Dati inviati con successo a Fluent Bit.")
                     else:
@@ -101,26 +108,26 @@ def upload_file():
             print(transcription)
             print("Durata della trascrizione: {} secondi".format(transcription_duration))
 
-            # Apri il file JSON esistente e carica i dati
-            with open("transcription.json", "r") as input:
-                existing_data = json.load(input)
-            
-            # Aggiungi la nuova trascrizione ai dati esistenti
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
             response = {
-                "transcription": []
+                "timestamp": timestamp,
+                "text": transcription,
+                "duration": transcription_duration
             }
-            response["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
-            existing_data["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
-            
-            # Salva i dati aggiornati nel file JSON
-            with open("transcription.json", "w") as output:
-                json.dump(existing_data, output, indent=2)
+
+            # Aggiungi la trascrizione alla lista di trascrizioni
+            transcription_data.append(response)
+
+            # Salva i dati in un file JSON
+            with open("transcription.json", "a") as output:
+                json.dump(transcription_data, output, indent=2)
 
             # Invia i dati a Fluent Bit sulla porta 9090
             fluent_bit_url = 'http://fluent-bit:9090'  # Assumi che Fluent Bit sia in esecuzione sullo stesso host
             try:
-                response = requests.post(fluent_bit_url, json=existing_data)
+                response_json = json.dumps(response)
+                headers = {'Content-Type': 'application/json'}
+                response = requests.post(fluent_bit_url, data=response_json, headers=headers)
                 if response.status_code == 200:
                     print("Dati inviati con successo a Fluent Bit.")
                 else:
