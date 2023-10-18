@@ -2,11 +2,19 @@
 <html>
 <head>
     <title>Registrazione Audio</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Registrazione Audio</h1>
-    <p>Stato della registrazione: {% if recording %}In corso{% else %}Fermata{% endif %}</p>
-    <a href="/start">Avvia Registrazione</a>
-    <a href="/stop">Interrompi Registrazione</a>
+    <div class="container">
+        <h1>Registrazione Audio</h1>
+        <p class="recording-status">Stato della registrazione: {% if recording %}In corso{% else %}Fermata{% endif %}</p>
+        <a href="/start" class="btn start-button">Avvia Registrazione</a>
+        <a href="/stop" class="btn stop-button">Interrompi Registrazione</a>
+        
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <input type="submit" value="Carica e Trascrivi">
+        </form>
+    </div>
 </body>
 </html>
