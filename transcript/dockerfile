@@ -6,7 +6,6 @@ WORKDIR /app
 
 COPY transcript_video.py /app/transcript_video.py
 COPY transcript.py /app/transcript.py
-COPY transcript_whisper_demo.py /app/transcript_whisper_demo.py
 
 RUN pip3 install requests datetime SpeechRecognition 
 

@@ -3,13 +3,10 @@ import speech_recognition as sr
 import time
 import json
 import wave
+import requests  # Aggiunto il modulo requests
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
-
-response = {
-    "transcription": []
-}
 
 recording = False
 
@@ -40,10 +37,24 @@ def start_recording():
                 print("Hai detto:", transcription)
 
                 timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+                response = {
+                    "transcription": []
+                }
                 response["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
 
-                with open("transcription.json", "a") as output:
+                with open("transcription.json", "w") as output:
                     json.dump(response, output, indent=2)
+
+                # Invia i dati a Fluent Bit sulla porta 9090
+                fluent_bit_url = 'http://fluent-bit:9090'  # Assumi che Fluent Bit sia in esecuzione sullo stesso host
+                try:
+                    response = requests.post(fluent_bit_url, json=response)
+                    if response.status_code == 200:
+                        print("Dati inviati con successo a Fluent Bit.")
+                    else:
+                        print(f"Errore nell'invio dei dati a Fluent Bit. Risposta: {response.status_code}")
+                except requests.exceptions.RequestException as e:
+                    print(f'Errore nell\'invio dei dati a Fluent Bit: {e}')
 
             except sr.UnknownValueError:
                 print("Nessun input vocale rilevato.")
@@ -82,7 +93,7 @@ def upload_file():
 
         try:
             start_time = time.time()
-            transcription = r.recognize_whisper(audio, "medium", False, None, "en", False)
+            transcription = r.recognize_whisper(audio, "medium", False, None, "it", False)
             end_time = time.time()
             transcription_duration = end_time - start_time
 
@@ -96,11 +107,26 @@ def upload_file():
             
             # Aggiungi la nuova trascrizione ai dati esistenti
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            response = {
+                "transcription": []
+            }
+            response["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
             existing_data["transcription"].append({"timestamp": timestamp, "text": transcription, "duration": transcription_duration})
             
             # Salva i dati aggiornati nel file JSON
-            with open("transcription.json", "a") as output:
+            with open("transcription.json", "w") as output:
                 json.dump(existing_data, output, indent=2)
+
+            # Invia i dati a Fluent Bit sulla porta 9090
+            fluent_bit_url = 'http://fluent-bit:9090'  # Assumi che Fluent Bit sia in esecuzione sullo stesso host
+            try:
+                response = requests.post(fluent_bit_url, json=existing_data)
+                if response.status_code == 200:
+                    print("Dati inviati con successo a Fluent Bit.")
+                else:
+                    print(f"Errore nell'invio dei dati a Fluent Bit. Risposta: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                print(f'Errore nell\'invio dei dati a Fluent Bit: {e}')
 
             return transcription
         except sr.UnknownValueError:
@@ -109,4 +135,4 @@ def upload_file():
             return "Errore di connessione al servizio di riconoscimento vocale: {0}".format(e)
 
 if __name__ == '__main__':
-    app.run(port=8000, debug=True)
+    app.run(port=8880, debug=True)
