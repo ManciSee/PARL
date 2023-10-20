@@ -2,7 +2,7 @@ import speech_recognition as sr
 import time
 
 r = sr.Recognizer()
-audio = sr.AudioFile('./prova.wav')
+audio = sr.AudioFile('../prova.wav')
 
 with audio as source:
     print("Rilevamento del livello di rumore ambientale...")

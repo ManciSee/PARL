@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.4.1
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -33,7 +33,7 @@ services:
         - kafka
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:5.4.1
     container_name: kafka
     depends_on:
       - zookeeper
@@ -53,7 +53,7 @@ services:
       - network
 
   fluentbit:
-    image: fluent/fluent-bit:latest
+    image: fluent/fluent-bit:1.8
     ports: 
       - 9090:9090
     volumes:
