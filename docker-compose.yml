@@ -2,7 +2,7 @@ version: '3.9'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:5.4.1
-    container_name: zookeeper
+    container_name: "zookeeper-speech"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -34,7 +34,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:5.4.1
-    container_name: kafka
+    container_name: "kafka-speech"
     depends_on:
       - zookeeper
     ports:
@@ -62,7 +62,37 @@ services:
       - kafka
     networks:
       - network
-    container_name: "fluent-bit"
+    container_name: "fluentbit-speech"
+
+  spark:
+    build: ./spark/
+    depends_on:
+      - elasticsearch    
+    networks:
+      - network
+    container_name: "spark-speech"
+    volumes:
+      - ./spark:/app
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1-arm64
+    container_name: "elasticsearch"
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "xpack.security.enabled=false"
+      - "network.host=0.0.0.0"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      -  ./esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - network
 
 networks:
   network:

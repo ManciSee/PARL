@@ -10,12 +10,15 @@ app = Flask(__name__)
 recording = False
 transcription_data = []  # Lista per memorizzare le trascrizioni
 
+
+
 @app.route('/')
 def index():
     return render_template('index.html', recording=recording)
 
 @app.route('/start')
 def start_recording():
+    id_recording = 0
     global recording
     recording = True
 
@@ -30,7 +33,7 @@ def start_recording():
             audio = r.listen(source)
             try:
                 start_time = time.time()
-                transcription = r.recognize_whisper(audio, "medium", False, None, "it", False)
+                transcription = r.recognize_whisper(audio, "small", False, None, "it", False)
                 end_time = time.time()
                 transcription_duration = end_time - start_time
 
@@ -39,16 +42,19 @@ def start_recording():
                 timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
                 
                 stream = {
+                    'id': id_recording,
                     'timestamp': timestamp,
                     'text': transcription,
                     'duration': transcription_duration
                 }
+                id_recording += 1
 
                 
                 transcription_data.append(stream)
 
                 for stream in transcription_data:
                     data = {
+                        'id': stream['id'],
                         'timestamp': stream['timestamp'],
                         'text': stream['text'],
                         'duration': stream['duration']
@@ -57,8 +63,8 @@ def start_recording():
                     url = 'http://localhost:9090'
                     response = requests.post(url, data=json.dumps(data), headers=headers)
 
-                with open("transcription.json", "w") as output:
-                    json.dump(transcription_data, output, indent=2)
+                # with open("transcription.json", "w") as output:
+                #     json.dump(transcription_data, output, indent=2)
 
             except sr.UnknownValueError:
                 print("Nessun input vocale rilevato.")
@@ -73,70 +79,69 @@ def stop_recording():
     recording = False
     return "Registrazione interrotta. Trascrizione salvata in 'transcription.json'."
 
-# @app.route('/upload', methods=['POST'])
-# def upload_file():
-#     global recording
-#     recording = False
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    id_audio = 0
+    global recording
+    recording = False
 
-#     if 'file' not in request.files:
-#         return "Nessun file selezionato"
+    if 'file' not in request.files:
+        return "Nessun file selezionato"
 
-#     file = request.files['file']
-#     if file.filename == '':
-#         return "Nome file vuoto"
+    file = request.files['file']
+    if file.filename == '':
+        return "Nome file vuoto"
 
-#     if file:
-#         audio_data = file.read()
+    if file:
+        audio_data = file.read()
 
-#         # Imposta la larghezza dei campioni a 2 (16 bit)
-#         sample_width = 2
-#         sample_rate = 44100  # Assumendo un campionamento a 44.1 kHz
+        # Imposta la larghezza dei campioni a 2 (16 bit)
+        sample_width = 2
+        sample_rate = 44100  # Assumendo un campionamento a 44.1 kHz
 
-#         r = sr.Recognizer()
-#         audio = sr.AudioData(audio_data, sample_rate=sample_rate, sample_width=sample_width)
+        r = sr.Recognizer()
+        audio = sr.AudioData(audio_data, sample_rate=sample_rate, sample_width=sample_width)
 
-#         try:
-#             start_time = time.time()
-#             transcription = r.recognize_whisper(audio, "medium", False, None, "it", False)
-#             end_time = time.time()
-#             transcription_duration = end_time - start_time
+        try:
+            start_time = time.time()
+            transcription = r.recognize_whisper(audio, "small", False, None, "it", False)
+            end_time = time.time()
+            transcription_duration = end_time - start_time
 
-#             print("Trascrizione del file audio:")
-#             print(transcription)
-#             print("Durata della trascrizione: {} secondi".format(transcription_duration))
+            print("Trascrizione del file audio:")
+            print(transcription)
+            print("Durata della trascrizione: {} secondi".format(transcription_duration))
 
-#             timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-#             response = {
-#                 "timestamp": timestamp,
-#                 "text": transcription,
-#                 "duration": transcription_duration
-#             }
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            stream = {
+                    'id': id_audio,
+                    'timestamp': timestamp,
+                    'text': transcription,
+                    'duration': transcription_duration
+                }
+            id_audio += 1
 
-#             # Aggiungi la trascrizione alla lista di trascrizioni
-#             transcription_data.append(response)
+            transcription_data.append(response)
 
-#             # Salva i dati in un file JSON
-#             with open("transcription.json", "a") as output:
-#                 json.dump(transcription_data, output, indent=2)
+            for stream in transcription_data:
+                data = {
+                    'id': stream['id'],
+                    'timestamp': stream['timestamp'],
+                    'text': stream['text'],
+                    'duration': stream['duration']
+                }
+                headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
+                url = 'http://localhost:9090'
+                response = requests.post(url, data=json.dumps(data), headers=headers)
 
-#             # Invia i dati a Fluent Bit sulla porta 9090
-#             fluent_bit_url = 'http://fluent-bit:9090'  # Assumi che Fluent Bit sia in esecuzione sullo stesso host
-#             try:
-#                 response_json = json.dumps(response)
-#                 headers = {'Content-Type': 'application/json'}
-#                 response = requests.post(fluent_bit_url, data=response_json, headers=headers)
-#                 if response.status_code == 200:
-#                     print("Dati inviati con successo a Fluent Bit.")
-#                 else:
-#                     print(f"Errore nell'invio dei dati a Fluent Bit. Risposta: {response.status_code}")
-#             except requests.exceptions.RequestException as e:
-#                 print(f'Errore nell\'invio dei dati a Fluent Bit: {e}')
+            # Salva i dati in un file JSON
+            # with open("transcription.json", "a") as output:
+            #     json.dump(transcription_data, output, indent=2)
 
-#             return transcription
-#         except sr.UnknownValueError:
-#             return "Nessun input vocale rilevato."
-#         except sr.RequestError as e:
-#             return "Errore di connessione al servizio di riconoscimento vocale: {0}".format(e)
+        except sr.UnknownValueError:
+            return "Nessun input vocale rilevato."
+        except sr.RequestError as e:
+            return "Errore di connessione al servizio di riconoscimento vocale: {0}".format(e)
 
 if __name__ == '__main__':
     app.run(port=8880, debug=True)
