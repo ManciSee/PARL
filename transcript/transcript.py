@@ -3,14 +3,12 @@ import speech_recognition as sr
 import time
 import json
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
 recording = False
 transcription_data = []  # Lista per memorizzare le trascrizioni
-
-
 
 @app.route('/')
 def index():
@@ -40,7 +38,7 @@ def start_recording():
                 print("Hai detto:", transcription)
 
                 timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-                
+
                 stream = {
                     'id': id_recording,
                     'timestamp': timestamp,
@@ -49,7 +47,6 @@ def start_recording():
                 }
                 id_recording += 1
 
-                
                 transcription_data.append(stream)
 
                 for stream in transcription_data:
@@ -62,9 +59,6 @@ def start_recording():
                     headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
                     url = 'http://localhost:9090'
                     response = requests.post(url, data=json.dumps(data), headers=headers)
-
-                # with open("transcription.json", "w") as output:
-                #     json.dump(transcription_data, output, indent=2)
 
             except sr.UnknownValueError:
                 print("Nessun input vocale rilevato.")
@@ -142,6 +136,11 @@ def upload_file():
             return "Nessun input vocale rilevato."
         except sr.RequestError as e:
             return "Errore di connessione al servizio di riconoscimento vocale: {0}".format(e)
+
+
+@app.route('/get_transcription', methods=['GET'])
+def get_transcription():
+    return jsonify(transcription_data)
 
 if __name__ == '__main__':
     app.run(port=8880, debug=True)

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Registrazione Audio</title>
+    <title>Audio Inventory</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
@@ -10,11 +10,28 @@
         <p class="recording-status">Stato della registrazione: {% if recording %}In corso{% else %}Fermata{% endif %}</p>
         <a href="/start" class="btn start-button">Avvia Registrazione</a>
         <a href="/stop" class="btn stop-button">Interrompi Registrazione</a>
-        
+        <div id="transcription-box" class="transcription-box"></div> 
+
         <form action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="file">
             <input type="submit" value="Carica e Trascrivi">
         </form>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Funzione per aggiornare la trascrizione
+        function updateTranscription() {
+            $.get('/get_transcription', function (data) {
+                var transcriptionBox = $('#transcription-box');
+                transcriptionBox.empty();  // Svuota il contenuto precedente
+                data.forEach(function (stream) {
+                    transcriptionBox.append('<p>' + stream.text + '</p>');  // Aggiunge la trascrizione
+                });
+            });
+        }
+
+        // Aggiorna la trascrizione ogni secondo
+        setInterval(updateTranscription, 1000);
+    </script>
 </body>
 </html>

@@ -32,3 +32,5 @@ df.selectExpr("CAST(timestamp AS STRING)", "CAST(value AS STRING)") \
     .format("console") \
     .start() \
     .awaitTermination()
+
+    
