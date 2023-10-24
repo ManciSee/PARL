@@ -2,24 +2,25 @@
 <html>
 <head>
     <title>Audio Inventory</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}"> -->
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+
 </head>
-<body>
-    <div class="container">
-        <h1>Registrazione Audio</h1>
-        <p class="recording-status">Stato della registrazione: {% if recording %}In corso{% else %}Fermata{% endif %}</p>
-        <a href="/start" class="btn start-button">Avvia Registrazione</a>
-        <a href="/stop" class="btn stop-button">Interrompi Registrazione</a>
-        <div id="transcription-box" class="transcription-box">
-            <div class="transcription-container">
-                <p class="transcription-text">Testo della trascrizione</p>
-                <button class="delete-button" onclick="clearTranscription()">Cancella</button>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="text-center p-8 bg-white rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold">Registrazione Audio</h1>
+        <a href="/start" class="btn-start inline-block px-6 py-2 mx-2 bg-green-500 text-white rounded">Avvia Registrazione</a>
+        <a href="/stop" class="btn-stop inline-block px-6 py-2 mx-2 bg-red-500 text-white rounded">Interrompi Registrazione</a>
+        <div id="transcription-box" class="mt-4 p-4 bg-blue-500 text-white rounded">
+            <div>
+                <p class="font-semibold text-xl mb-4">Testo della trascrizione</p>
+                <button class="btn-clear bg-white text-blue-500 px-4 py-2 rounded" onclick="clearTranscription()">Cancella</button>
             </div>
         </div>
 
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <input type="submit" value="Carica e Trascrivi">
+        <form action="/upload" method="post" enctype="multipart/form-data" class="mt-4">
+            <input type="file" name="file" class="block mb-2">
+            <input type="submit" value="Carica e Trascrivi" class="btn-upload inline-block px-6 py-2 bg-blue-500 text-white rounded">
         </form>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -32,7 +33,7 @@
                 data.forEach(function (stream) {
                     var transcriptionContainer = $('<div class="transcription-container"></div>');
                     transcriptionContainer.append('<p class="transcription-text">' + stream.text + '</p>');
-                    var deleteButton = $('<button class="delete-button" onclick="clearTranscription()">Cancella</button>');
+                    var deleteButton = $('<button class="btn-clear bg-white text-blue-500 px-4 py-2 rounded" onclick="clearTranscription()">Cancella</button>');
                     transcriptionContainer.append(deleteButton);
                     transcriptionBox.append(transcriptionContainer);  // Aggiunge la trascrizione
                 });
