@@ -14,6 +14,8 @@ transcription_data = []  # Lista per memorizzare le trascrizioni
 def index():
     return render_template('index.html', recording=recording)
 
+
+
 @app.route('/start')
 def start_recording():
     id_recording = 0
@@ -35,30 +37,31 @@ def start_recording():
                 end_time = time.time()
                 transcription_duration = end_time - start_time
 
-                print("Hai detto:", transcription)
+                if transcription:  # Verifica se la trascrizione non è vuota
+                    print("Hai detto:", transcription)
 
-                timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+                    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
 
-                stream = {
-                    'id': id_recording,
-                    'timestamp': timestamp,
-                    'text': transcription,
-                    'duration': transcription_duration
-                }
-                id_recording += 1
-
-                transcription_data.append(stream)
-
-                for stream in transcription_data:
-                    data = {
-                        'id': stream['id'],
-                        'timestamp': stream['timestamp'],
-                        'text': stream['text'],
-                        'duration': stream['duration']
+                    stream = {
+                        'id': id_recording,
+                        'timestamp': timestamp,
+                        'text': transcription,
+                        'duration': transcription_duration
                     }
-                    headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
-                    url = 'http://localhost:9090'
-                    response = requests.post(url, data=json.dumps(data), headers=headers)
+                    id_recording += 1
+
+                    transcription_data.append(stream)
+
+                    for stream in transcription_data:
+                        data = {
+                            'id': stream['id'],
+                            'timestamp': stream['timestamp'],
+                            'text': stream['text'],
+                            'duration': stream['duration']
+                        }
+                        headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
+                        url = 'http://localhost:9090'
+                        response = requests.post(url, data=json.dumps(data), headers=headers)
 
             except sr.UnknownValueError:
                 print("Nessun input vocale rilevato.")
@@ -66,6 +69,7 @@ def start_recording():
                 print("Errore di connessione al servizio di riconoscimento vocale: {0}".format(e))
 
     return "Registrazione interrotta. Trascrizione salvata in 'transcription.json'."
+
 
 @app.route('/stop')
 def stop_recording():

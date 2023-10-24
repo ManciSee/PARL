@@ -10,7 +10,12 @@
         <p class="recording-status">Stato della registrazione: {% if recording %}In corso{% else %}Fermata{% endif %}</p>
         <a href="/start" class="btn start-button">Avvia Registrazione</a>
         <a href="/stop" class="btn stop-button">Interrompi Registrazione</a>
-        <div id="transcription-box" class="transcription-box"></div> 
+        <div id="transcription-box" class="transcription-box">
+            <div class="transcription-container">
+                <p class="transcription-text">Testo della trascrizione</p>
+                <button class="delete-button" onclick="clearTranscription()">Cancella</button>
+            </div>
+        </div>
 
         <form action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="file">
@@ -25,13 +30,22 @@
                 var transcriptionBox = $('#transcription-box');
                 transcriptionBox.empty();  // Svuota il contenuto precedente
                 data.forEach(function (stream) {
-                    transcriptionBox.append('<p>' + stream.text + '</p>');  // Aggiunge la trascrizione
+                    var transcriptionContainer = $('<div class="transcription-container"></div>');
+                    transcriptionContainer.append('<p class="transcription-text">' + stream.text + '</p>');
+                    var deleteButton = $('<button class="delete-button" onclick="clearTranscription()">Cancella</button>');
+                    transcriptionContainer.append(deleteButton);
+                    transcriptionBox.append(transcriptionContainer);  // Aggiunge la trascrizione
                 });
             });
         }
 
         // Aggiorna la trascrizione ogni secondo
-        setInterval(updateTranscription, 1000);
+        setInterval(updateTranscription, 2000);
+
+        // Funzione per cancellare la trascrizione
+        function clearTranscription() {
+            $('#transcription-box').empty();
+        }
     </script>
 </body>
 </html>

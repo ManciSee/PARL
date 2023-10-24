@@ -83,3 +83,36 @@ input[type="submit"] {
 input[type="submit"]:hover {
     background-color: #005b80;
 }
+
+
+/* Stile per il rettangolo blu */
+.transcription-container {
+    background-color: #3498db;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+/* Stile per il testo della trascrizione */
+.transcription-text {
+    color: #fff;
+    margin: 0;
+    font-weight: bold;
+}
+
+/* Stile per il pulsante "Cancella" */
+.delete-button {
+    background-color: #e74c3c;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+/* Effetto hover sul pulsante "Cancella" */
+.delete-button:hover {
+    background-color: #c0392b;
+}
