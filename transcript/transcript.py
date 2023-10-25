@@ -15,7 +15,6 @@ def index():
     return render_template('index.html', recording=recording)
 
 
-
 @app.route('/start')
 def start_recording():
     id_recording = 0
