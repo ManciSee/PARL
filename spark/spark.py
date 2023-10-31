@@ -15,14 +15,49 @@ def elaborate(batch_df: DataFrame, batch_id: int):
     batch_df.show(truncate=False)
 
 # Create a Spark context and session
-sc = SparkContext(appName="StreamingKafka")
+SparkConf = SparkConf().set("es.nodes", "elasticsearch").set("es.port", "9200")
+sc = SparkContext(conf=SparkConf, appName="StreamingKafka")
 spark = SparkSession(sc)
 sc.setLogLevel("ERROR")
 
+# Kafka
 kafkaServer = "kafka:39092"
 topic = "speech"
 
-# Define the schema for the JSON data
+# Elasticsearch
+elastic_host = "http://elasticsearch:9200"
+elastic_index = "speech"
+
+es_mapping = {
+    "mappings": {
+        "properties": {
+            "timestamp": {
+                "type": "date",
+                "format": "yyyy-MM-dd'T'HH:mm:ss"
+            },
+            "text": {
+                "type": "text",
+                "fielddata": True
+            },
+            "duration": {
+                "type": "float"
+            }
+        }
+    }
+}
+
+
+es = Elasticsearch(elastic_host)
+response = es.indices.create(
+    index=elastic_index,
+    body=es_mapping,
+    ignore=400
+)
+
+if 'acknowledged' in response:
+    if response['acknowledged'] == True:
+        print ("INDEX MAPPING SUCCESS FOR INDEX:", response['index'])
+
 schema = StructType([
     StructField("id", StringType(), True),
     StructField("timestamp", StringType(), True),
@@ -31,24 +66,19 @@ schema = StructType([
 ])
 
 def write_to_csv(record):
-    # Define the path to the CSV file where you want to save the data
     csv_file_path = "/app/transcription.csv"
-    
-    # Define the column names
     column_names = ["id", "timestamp", "text", "duration"]
 
-    # If the file does not exist, write the column names as the header
     if not os.path.isfile(csv_file_path):
         with open(csv_file_path, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(column_names)
     
-    # Append the data to the CSV file
     with open(csv_file_path, 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([record['id'], record['timestamp'], record['text'], record['duration']])
 
-# Read from Kafka
+print("Reading from Kafka...")
 df = spark \
     .readStream \
     .format("kafka") \
@@ -56,19 +86,20 @@ df = spark \
     .option("subscribe", topic) \
     .load()
 
-# Deserialize the value from Kafka as JSON
 df = df.selectExpr("CAST(value AS STRING)")
-
-# Apply the schema to the JSON data
 df = df.select(from_json("value", schema).alias("data"))
-
-# Select the individual columns
 df = df.select("data.id", "data.timestamp", "data.text", "data.duration")
 
-# Write to CSV file
+print("Save to CSV...")
 df.writeStream \
     .foreach(write_to_csv) \
     .start() \
     .awaitTermination()
-
 print("Done!")
+
+print("Send to elasticsearch...")
+df.writeStream \
+    .option("checkpointLocation", "/save/location") \
+    .format("es") \
+    .start(elastic_index) \
+    .awaitTermination()

@@ -131,10 +131,6 @@ def upload_file():
                 url = 'http://localhost:9090'
                 response = requests.post(url, data=json.dumps(data), headers=headers)
 
-            # Salva i dati in un file JSON
-            # with open("transcription.json", "a") as output:
-            #     json.dump(transcription_data, output, indent=2)
-
         except sr.UnknownValueError:
             return "Nessun input vocale rilevato."
         except sr.RequestError as e:

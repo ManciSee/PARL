@@ -94,6 +94,18 @@ services:
     networks:
       - network
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.7.1-arm64
+    container_name: kibana
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - network
+    depends_on:
+      - elasticsearch    
+
 networks:
   network:
     driver: bridge
