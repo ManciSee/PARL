@@ -66,18 +66,18 @@ schema = StructType([
     StructField("duration", StringType(), True)
 ])
 
-def write_to_csv(record):
-    csv_file_path = "/app/transcription.csv"
-    column_names = ["id", "timestamp", "text", "duration"]
+# def write_to_csv(record):
+#     csv_file_path = "/app/transcription.csv"
+#     column_names = ["id", "timestamp", "text", "duration"]
 
-    if not os.path.isfile(csv_file_path):
-        with open(csv_file_path, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(column_names)
+#     if not os.path.isfile(csv_file_path):
+#         with open(csv_file_path, 'w', newline='') as f:
+#             writer = csv.writer(f)
+#             writer.writerow(column_names)
     
-    with open(csv_file_path, 'a', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow([record['id'], record['timestamp'], record['text'], record['duration']])
+#     with open(csv_file_path, 'a', newline='') as f:
+#         writer = csv.writer(f)
+#         writer.writerow([record['id'], record['timestamp'], record['text'], record['duration']])
 
 def write_to_csv_and_send_to_es(record):
     csv_file_path = "/app/transcription.csv"

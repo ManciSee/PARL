@@ -39,7 +39,7 @@ def start_recording():
                 if transcription:  # Verifica se la trascrizione non è vuota
                     print("Hai detto:", transcription)
 
-                    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+                    timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
 
                     stream = {
                         'id': id_recording,
@@ -81,6 +81,7 @@ def upload_file():
     id_audio = 0
     global recording
     recording = False
+    response = None
 
     if 'file' not in request.files:
         return "Nessun file selezionato"
@@ -101,7 +102,7 @@ def upload_file():
 
         try:
             start_time = time.time()
-            transcription = r.recognize_whisper(audio, "small", False, None, "it", False)
+            transcription = r.recognize_whisper(audio, "tiny.en", False, None, "it", False)
             end_time = time.time()
             transcription_duration = end_time - start_time
 
@@ -109,7 +110,7 @@ def upload_file():
             print(transcription)
             print("Durata della trascrizione: {} secondi".format(transcription_duration))
 
-            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
             stream = {
                     'id': id_audio,
                     'timestamp': timestamp,
