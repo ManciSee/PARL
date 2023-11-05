@@ -91,36 +91,41 @@ def upload_file():
         return "Nome file vuoto"
 
     if file:
-        audio_data = file.read()
-
-        # Imposta la larghezza dei campioni a 2 (16 bit)
-        sample_width = 2
-        sample_rate = 44100  # Assumendo un campionamento a 44.1 kHz
-
+        audio_data = io.BytesIO(file.read())
         r = sr.Recognizer()
-        audio = sr.AudioData(audio_data, sample_rate=sample_rate, sample_width=sample_width)
+        audio = sr.AudioFile(audio_data)
 
-        try:
+        with audio as source:
+            print("Rilevamento del livello di rumore ambientale...")
+            r.adjust_for_ambient_noise(source, 0.5)
+            print("Livello di rumore ambientale rilevato e adattato.")
+            audio = r.record(source)
+
+            print("Avvio del riconoscimento vocale...")
+
             start_time = time.time()
-            transcription = r.recognize_whisper(audio, "tiny.en", False, None, "it", False)
-            end_time = time.time()
+            
+            # tiny.en much faster for English text
+            recognized_text = r.recognize_whisper(audio, "tiny.en", False, None, "en", False)
+            end_time = time.time()  
+
             transcription_duration = end_time - start_time
 
-            print("Trascrizione del file audio:")
-            print(transcription)
+            print("Testo riconosciuto:")
+            print(recognized_text)
             print("Durata della trascrizione: {} secondi".format(transcription_duration))
-
+            print("Elaborazione completata.")
+            
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
             stream = {
                     'id': id_audio,
                     'timestamp': timestamp,
-                    'text': transcription,
+                    'text': recognized_text,
                     'duration': transcription_duration
                 }
             id_audio += 1
 
-            transcription_data.append(response)
-
+            transcription_data.append(stream)
             for stream in transcription_data:
                 data = {
                     'id': stream['id'],
@@ -131,11 +136,7 @@ def upload_file():
                 headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
                 url = 'http://localhost:9090'
                 response = requests.post(url, data=json.dumps(data), headers=headers)
-
-        except sr.UnknownValueError:
-            return "Nessun input vocale rilevato."
-        except sr.RequestError as e:
-            return "Errore di connessione al servizio di riconoscimento vocale: {0}".format(e)
+    return "File trascritto con successo" 
 
 
 @app.route('/get_transcription', methods=['GET'])
