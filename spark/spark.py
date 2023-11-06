@@ -48,16 +48,6 @@ es_mapping = {
 }
 
 
-#es = Elasticsearch(elastic_host)
-# response = es.indices.create(
-#     index=elastic_index,
-#     body=es_mapping,
-#     ignore=400
-# )
-
-# if 'acknowledged' in response:
-#     if response['acknowledged'] == True:
-#         print ("INDEX MAPPING SUCCESS FOR INDEX:", response['index'])
 
 schema = StructType([
     StructField("id", StringType(), True),
