@@ -1,0 +1,29 @@
+#recording-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: red;
+    position: absolute;
+    right: 20px; /* Adjust as needed */
+    top: 20px; /* Adjust as needed */
+    box-shadow: 0 0 0 rgba(204,169,44, 0.4);
+    animation: blink-animation 1s infinite;
+  }
+  
+  /* Hidden class to initially hide the recording indicator */
+  .hidden {
+    display: none;
+  }
+  
+  /* Keyframes for the blinking animation */
+  @keyframes blink-animation {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }

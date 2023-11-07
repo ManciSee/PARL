@@ -6,14 +6,19 @@
 <meta charset="UTF-8">
 <title>Audio Inventory</title>
 <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../styles/styles.css">
+
 
 </head>
 <body class="flex items-center justify-center h-screen bg-gray-200">
     <div class="text-center p-8 bg-white rounded-2xl shadow-2xl transition duration-300 ease-in-out transform hover:scale-105">
-        <h1 class="text-4xl font-bold text-gray-800">Registrazione Audio</h1>
-        <div class="mt-6">
-        <a id="start-btn" class="btn-start inline-block px-6 py-3 mx-2 bg-green-500 text-white rounded-lg font-semibold shadow-md">Avvia Registrazione</a>
-        <a id="stop-btn" style="display: none;" class="btn-stop inline-block px-6 py-3 mx-2 bg-red-500 text-white rounded-lg font-semibold shadow-md ">Interrompi Registrazione</a>
+        <h1 class="text-4xl font-bold text-gray-800">Audio Inventory</h1>
+        <p class="mt-2 text-md text-gray-600">Avvia la registrazione e parla chiaramente, poi premi stop per ottenere la trascrizione. Oppure carica un file WAV per ottenere la trascrizione.</p>
+        <div class="mt-6 relative">
+        <a id="start-btn" class="btn-start inline-block px-6 py-3 mx-2 bg-green-500 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-green-600 transition duration-200">Avvia Registrazione</a>
+        <div id="recording-indicator" class="hidden"></div>
+
+        <a id="stop-btn" style="display: none;" class="btn-stop inline-block px-6 py-3 mx-2 bg-red-500 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-red-600 transition duration-200 ">Interrompi Registrazione</a>
       </div>
         <div id="transcription-box" class="mt-6 p-6 bg-blue-400 text-white rounded-lg shadow-inner">
             <div id="t-int-box">
@@ -22,8 +27,10 @@
       <button id="clearBtn" style="display: none;" class="btn-clear text-blue-400 bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200" onclick="clearTranscription()">Cancella</button>
         </div>
         <div class="mt-8">
-            <input type="file" id="fileInput" class="block mb-4 p-2 w-1/2 mx-auto border-2 border-gray-300 rounded-lg">
-            <button onclick="uploadFile()" class="btn-upload inline-block px-6 py-3 bg-blue-400 text-white rounded-lg font-semibold shadow-md hover:bg-blue-500 transition duration-200">Carica e Trascrivi</button>
+            <input type="file" id="fileInput" class="block mb-4 p-2 w-full mx-auto border-2 border-gray-300 rounded-lg ">
+            <button onclick="uploadFile()" class="btn-upload inline-block px-6 py-3 bg-blue-400 text-white rounded-lg font-semibold shadow-md hover:bg-blue-500 transition duration-200 ">Carica e Trascrivi</button>
+  
+
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -153,6 +160,12 @@ function uploadFile() {
   } else {
     console.log("Il tuo browser non supporta l'API Web Speech.");
   }
+
+  document.getElementById('start-btn').addEventListener('click', function() {
+  var indicator = document.getElementById('recording-indicator');
+  indicator.classList.toggle('hidden'); // This will show the recording indicator
+  // Start recording logic here
+});
 </script>
 </body>
 </html>
