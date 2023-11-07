@@ -4,8 +4,10 @@ import time
 import json
 import requests
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 recording = False
 transcription_data = []  # Lista per memorizzare le trascrizioni
@@ -15,66 +17,96 @@ def index():
     return render_template('index.html', recording=recording)
 
 
-@app.route('/start')
-def start_recording():
-    id_recording = 0
-    global recording
-    recording = True
+@app.route('/sendRecording', methods=['POST'])
+def get_recording():
+    data = request.json
+    # Ora puoi accedere al campo 'text' all'interno del JSON
+    transcription = data['text']
+    duration = data['duration']
+    if transcription:  # Verifica se la trascrizione non è vuota
+        print("Hai detto:", transcription)
 
-    r = sr.Recognizer()
-    mic = sr.Microphone(device_index=0)
+        timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
 
-    with mic as source:
-        r.adjust_for_ambient_noise(source)
-        print("Inizio registrazione...")
+        stream = {
+            'id': timestamp,
+            'timestamp': timestamp,
+            'text': transcription,
+            'duration': duration
+        }
+        #id_recording += 1
+        # transcription_data=[]
+        transcription_data.append(stream)
 
-        while recording:
-            audio = r.listen(source)
-            try:
-                start_time = time.time()
-                transcription = r.recognize_whisper(audio, "small", False, None, "it", False)
-                end_time = time.time()
-                transcription_duration = end_time - start_time
+        # for stream in transcription_data:
+        # data = {
+        #         'id': stream['id'],
+        #         'timestamp': stream['timestamp'],
+        #         'text': stream['text'],
+        #         'duration': stream['duration']
+        # }
+        headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
+        url = 'http://localhost:9090'
+        response = requests.post(url, data=json.dumps(stream), headers=headers)
+    return json.dumps("{ok:true}")
+    # id_recording = 0
+    # global recording
+    # recording = True
+    # print()
+    # r = sr.Recognizer()
+    # mic = sr.Microphone(device_index=0)
 
-                if transcription:  # Verifica se la trascrizione non è vuota
-                    print("Hai detto:", transcription)
+    # with mic as source:
+    #     r.adjust_for_ambient_noise(source)
+    #     print("Inizio registrazione...")
 
-                    timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
+    #     while recording:
+    #         audio = r.listen(source)
+    #         try:
+    #             start_time = time.time()
+    #             transcription = r.recognize_whisper(audio, "small", False, None, "it", False)
+    #             end_time = time.time()
+    #             transcription_duration = end_time - start_time
 
-                    stream = {
-                        'id': id_recording,
-                        'timestamp': timestamp,
-                        'text': transcription,
-                        'duration': transcription_duration
-                    }
-                    id_recording += 1
+    #             if transcription:  # Verifica se la trascrizione non è vuota
+    #                 print("Hai detto:", transcription)
 
-                    transcription_data.append(stream)
+    #                 timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
 
-                    for stream in transcription_data:
-                        data = {
-                            'id': stream['id'],
-                            'timestamp': stream['timestamp'],
-                            'text': stream['text'],
-                            'duration': stream['duration']
-                        }
-                        headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
-                        url = 'http://localhost:9090'
-                        response = requests.post(url, data=json.dumps(data), headers=headers)
+    #                 stream = {
+    #                     'id': id_recording,
+    #                     'timestamp': timestamp,
+    #                     'text': transcription,
+    #                     'duration': transcription_duration
+    #                 }
+    #                 id_recording += 1
+    #                 # transcription_data=[]
+    #                 transcription_data.append(stream)
 
-            except sr.UnknownValueError:
-                print("Nessun input vocale rilevato.")
-            except sr.RequestError as e:
-                print("Errore di connessione al servizio di riconoscimento vocale: {0}".format(e))
+    #                 # for stream in transcription_data:
+    #                 # data = {
+    #                 #         'id': stream['id'],
+    #                 #         'timestamp': stream['timestamp'],
+    #                 #         'text': stream['text'],
+    #                 #         'duration': stream['duration']
+    #                 # }
+    #                 headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
+    #                 url = 'http://localhost:9090'
+    #                 response = requests.post(url, data=json.dumps(stream), headers=headers)
 
-    return "Registrazione interrotta. Trascrizione salvata in 'transcription.json'."
+    #         except sr.UnknownValueError:
+    #             print("Nessun input vocale rilevato.")
+    #         except sr.RequestError as e:
+    #             print("Errore di connessione al servizio di riconoscimento vocale: {0}".format(e))
+
+    # return "Registrazione interrotta. Trascrizione salvata in 'transcription.json'."
 
 
-@app.route('/stop')
-def stop_recording():
-    global recording
-    recording = False
-    return "Registrazione interrotta. Trascrizione salvata in 'transcription.json'."
+# @app.route('/stop')
+# def stop_recording():
+#     global recording
+#     recording = False
+#     return "Registrazione interrotta. Trascrizione salvata in 'transcription.json'."
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -136,7 +168,7 @@ def upload_file():
                 headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
                 url = 'http://localhost:9090'
                 response = requests.post(url, data=json.dumps(data), headers=headers)
-    return "File trascritto con successo" 
+    return json.dumps(data)
 
 
 @app.route('/get_transcription', methods=['GET'])
