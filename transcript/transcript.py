@@ -150,7 +150,7 @@ def upload_file():
             
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
             stream = {
-                    'id': id_audio,
+                    'id': timestamp,
                     'timestamp': timestamp,
                     'text': recognized_text,
                     'duration': transcription_duration
