@@ -1,0 +1,8 @@
+numpy
+openai-whisper
+SpeechRecognition
+flask
+Flask-Cors
+torch
+ffmpeg
+soundfile

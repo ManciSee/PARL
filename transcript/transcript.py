@@ -8,7 +8,6 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-#provaprovaprova
 recording = False
 transcription_data = []  # Lista per memorizzare le trascrizioni
 
@@ -46,7 +45,8 @@ def get_recording():
         #         'duration': stream['duration']
         # }
         headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
-        url = 'http://localhost:9090'
+        #url = 'http://localhost:9090'
+        url = "http://192.168.66.231:9090"
         response = requests.post(url, data=json.dumps(stream), headers=headers)
     return json.dumps("{ok:true}")
     # id_recording = 0
@@ -166,7 +166,8 @@ def upload_file():
                     'duration': stream['duration']
                 }
                 headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
-                url = 'http://localhost:9090'
+                #url = 'http://localhost:9090'
+                url = "http://192.168.66.231:9090"
                 response = requests.post(url, data=json.dumps(data), headers=headers)
     return json.dumps(data)
 
@@ -176,4 +177,4 @@ def get_transcription():
     return jsonify(transcription_data)
 
 if __name__ == '__main__':
-    app.run(port=8880, debug=True)
+    app.run(host="192.168.66.231",port=8880, debug=True)
