@@ -46,7 +46,7 @@ def get_recording():
         # }
         headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
         #url = 'http://localhost:9090'
-        url = "http://192.168.66.231:9090"
+        url = "https://192.168.66.231:9090"
         response = requests.post(url, data=json.dumps(stream), headers=headers)
     return json.dumps("{ok:true}")
     # id_recording = 0
@@ -167,7 +167,7 @@ def upload_file():
                 }
                 headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
                 #url = 'http://localhost:9090'
-                url = "http://192.168.66.231:9090"
+                url = "https://192.168.66.231:9090"
                 response = requests.post(url, data=json.dumps(data), headers=headers)
     return json.dumps(data)
 
@@ -177,4 +177,4 @@ def get_transcription():
     return jsonify(transcription_data)
 
 if __name__ == '__main__':
-    app.run(host="192.168.66.231",port=8880, debug=True)
+    app.run(host="192.168.66.231",port=8880, debug=True, ssl_context='adhoc')
