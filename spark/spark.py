@@ -230,13 +230,19 @@ def write_to_csv_and_send_to_es(record):
         dominant_topic = max(topics, key=lambda x: x[1])
         topic_index, topic_score = dominant_topic
 
+        # 3 Topic
         top_terms = [term for term, _ in lda_model.show_topic(topic_index, topn=3) if not (term.isdigit() or '*' in term)]
+
+        # 1 Topic
+        unique_topic = top_terms[0] if top_terms else None
 
         results.append({
             'ID': row['id'],
             'Topic': topic_index,
             'Score': topic_score,
-            'Top Terms': ' , '.join(top_terms)
+            'Top Terms': ' , '.join(top_terms),
+            'Unique Topic': unique_topic
+
         })
     print("Done!")
 
@@ -247,7 +253,9 @@ def write_to_csv_and_send_to_es(record):
         "duration": record['duration'],
         "topic": topic_index,
         "score": topic_score,
-        "top_terms": ', '.join(top_terms)
+        "top_terms": ', '.join(top_terms),
+        "unique_topic": unique_topic
+
     }
     es.index(index=elastic_index, body=es_data, ignore=400)
 
