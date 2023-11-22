@@ -46,7 +46,7 @@ def get_recording():
         # }
         headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
         #url = 'http://localhost:9090'
-        url = "https://192.168.66.231:9090"
+        url = "http://192.168.66.231:9090"
         response = requests.post(url, data=json.dumps(stream), headers=headers)
     return json.dumps("{ok:true}")
     # id_recording = 0
@@ -110,7 +110,6 @@ def get_recording():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    id_audio = 0
     global recording
     recording = False
     response = None
@@ -138,7 +137,7 @@ def upload_file():
             start_time = time.time()
             
             # tiny.en much faster for English text
-            recognized_text = r.recognize_whisper(audio, "tiny.en", False, None, "en", False)
+            recognized_text = r.recognize_whisper(audio, "small", False, None, "it", False)
             end_time = time.time()  
 
             transcription_duration = end_time - start_time
@@ -149,25 +148,24 @@ def upload_file():
             print("Elaborazione completata.")
             
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
-            stream = {
+            streams = {
                     'id': timestamp,
                     'timestamp': timestamp,
                     'text': recognized_text,
                     'duration': transcription_duration
                 }
-            id_audio += 1
 
-            transcription_data.append(stream)
-            for stream in transcription_data:
+            transcription_data.append(streams)
+            for streams in transcription_data:
                 data = {
-                    'id': stream['id'],
-                    'timestamp': stream['timestamp'],
-                    'text': stream['text'],
-                    'duration': stream['duration']
+                    'id': streams['id'],
+                    'timestamp': streams['timestamp'],
+                    'text': streams['text'],
+                    'duration': streams['duration']
                 }
                 headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
                 #url = 'http://localhost:9090'
-                url = "https://192.168.66.231:9090"
+                url = "http://192.168.66.231:9090"
                 response = requests.post(url, data=json.dumps(data), headers=headers)
     return json.dumps(data)
 

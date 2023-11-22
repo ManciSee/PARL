@@ -47,7 +47,8 @@
 
 
 
-  <script>
+  <!--   SENZA TIMER ----
+    <script>
 
     function uploadFile() {
       const input = document.getElementById('fileInput');
@@ -170,6 +171,170 @@
 
       document.getElementById("start-btn").addEventListener("click", function () {
         recognition.start(); // Avvia il riconoscimento vocale
+      });
+
+      // Aggiungi listener al pulsante di stop
+      document.getElementById("stop-btn").addEventListener("click", function () {
+        recognition.stop(); // Ferma il riconoscimento vocale
+      });
+    } else {
+      console.log("Il tuo browser non supporta l'API Web Speech.");
+    }
+
+    document.getElementById('start-btn').addEventListener('click', function () {
+      var indicator = document.getElementById('recording-indicator');
+      indicator.classList.toggle('hidden'); // This will show the recording indicator
+      // Start recording logic here
+    });
+  </script> -->
+
+
+  <!-- CON TIMER -->
+  <script>
+    let transcriptParts = []; // Array per memorizzare le trascrizioni parziali
+
+
+    function uploadFile() {
+      const input = document.getElementById('fileInput');
+      const file = input.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // fetch('http://localhost:8880/upload', {
+        //     method: 'POST',
+        //     body: formData,
+        // })
+        fetch('https://192.168.66.231:8880/upload', {
+          method: 'POST',
+          body: formData,
+        })
+          .then(response => {
+            if (response.ok) {
+              response.text().then((jsonString) => {
+                let respObject = JSON.parse(jsonString)
+                let cloneEl = document.createElement('p')
+                cloneEl.setAttribute('tp', 'trascription')
+                cloneEl.textContent = respObject["text"]
+
+                document.getElementById('transcript').innerHTML = ""
+                var contenitore = document.querySelector('#t-int-box'); // Assicurati che esista un elemento con id="contenitore" nel tuo HTML
+                contenitore.append(cloneEl)
+                document.getElementById('clearBtn').style.display = 'inline'
+
+
+                return respObject["text"]
+              })
+
+            } else {
+              throw new Error('Network response was not ok.');
+            }
+          })
+          .then(data => {
+            // console.log('File uploaded successfully:', data);
+          })
+          .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+          });
+      }
+    }
+
+    function clearTranscription() {
+      let allElements = document.querySelectorAll('p[tp=trascription]')
+      for (let el of allElements) el.remove()
+      document.getElementById('clearBtn').style.display = 'none'
+
+      // Resetta l'array delle trascrizioni parziali
+      transcriptParts = [];
+
+    }
+    // Controlla se il browser supporta l'API Web Speech
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (typeof SpeechRecognition !== "undefined") {
+      let recognition = new SpeechRecognition();
+      let isRecording = false;
+      let startTime, endTime; // Variabili per conservare i timestamp di inizio e fine
+
+      recognition.continuous = true; // Continua a ascoltare anche dopo aver rilevato l'input
+      recognition.lang = "it-IT"; // Imposta la lingua italiana
+      recognition.interimResults = false; // I risultati intermedi non sono necessari
+
+      function sendTranscript(text, duration) {
+        if (transcriptParts.length > 0) {
+          const text = transcriptParts.join(' ');
+          const duration = (new Date() - startTime) / 1000;
+
+          // Invia il testo e la durata tramite una richiesta HTTP POST
+          // fetch('http://localhost:8880/sendRecording', { // Sostituisci con l'URL effettivo del server
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          fetch('https://192.168.66.231:8880/sendRecording', { // Sostituisci con l'URL effettivo del server
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: text, duration: duration }),
+          })
+            .then(response => response.json())
+            .then(data => console.log('Success:', data))
+            .catch((error) => console.error('Error:', error));
+
+          // Resetta l'array delle trascrizioni parziali
+          transcriptParts = [];
+        }
+      }
+
+      recognition.onstart = function () {
+        console.log("Il riconoscimento vocale è attivo.");
+        document.getElementById("start-btn").style.display = "none";
+        document.getElementById("stop-btn").style.display = "inline";
+        isRecording = true;
+        startTime = new Date(); // Registra il timestamp di inizio
+      };
+
+      recognition.onresult = function (event) {
+        // Accedi al risultato del riconoscimento vocale
+        const transcript = event.results[event.resultIndex][0].transcript;
+        document.getElementById("transcript").textContent += transcript;
+
+        // Aggiungi la trascrizione parziale all'array
+        transcriptParts.push(transcript);
+      };
+
+      recognition.onend = function () {
+        endTime = new Date(); // Registra il timestamp di fine
+        const duration = (endTime - startTime) / 1000; // Calcola la durata in secondi
+        if (isRecording) {
+          sendTranscript(document.getElementById("transcript").textContent, duration);
+          isRecording = false;
+        }
+        document.getElementById("start-btn").style.display = "inline";
+        document.getElementById("stop-btn").style.display = "none";
+        let cloneEl = document.createElement('p')
+        cloneEl.setAttribute('tp', 'trascription')
+        cloneEl.textContent = document.getElementById('transcript').textContent
+
+        document.getElementById('transcript').innerHTML = ""
+        var contenitore = document.querySelector('#t-int-box'); // Assicurati che esista un elemento con id="contenitore" nel tuo HTML
+        contenitore.append(cloneEl)
+        document.getElementById('clearBtn').style.display = 'inline'
+      };
+
+      recognition.onerror = function (event) {
+        console.error("Errore nel riconoscimento vocale: ", event.error);
+      };
+
+      document.getElementById("start-btn").addEventListener("click", function () {
+        recognition.start(); // Avvia il riconoscimento vocale
+
+        setInterval(function () {
+          if (isRecording) {
+            sendTranscript();
+          }
+        }, 10000);
       });
 
       // Aggiungi listener al pulsante di stop

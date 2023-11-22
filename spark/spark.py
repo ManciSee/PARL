@@ -133,6 +133,8 @@ from gensim.models import LdaModel
 from gensim.parsing.preprocessing import preprocess_string
 import re
 import numpy as np
+from typing import Set
+
 
 def elaborate(batch_df: DataFrame, batch_id: int):
     batch_df.show(truncate=False)
@@ -181,17 +183,30 @@ def write_to_csv_and_send_to_es(record):
     csv_file_path = "/app/transcription.csv"
     column_names = ["id", "timestamp", "text", "duration"]
 
-    if not os.path.isfile(csv_file_path):
+    is_empty = os.stat(csv_file_path).st_size == 0
+
+    if is_empty:
+        # If the CSV file is empty, add a new row with initial data
+        initial_data = ["2023-11-22T17:01:59", "2023-11-22T17:01:59", "Initial control phrase", 10.56848359107971]
         with open(csv_file_path, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(column_names)
-    
-    # with open(csv_file_path, 'a', newline='') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerow([record['id'], record['timestamp'], record['text'], record['duration']])
+            writer.writerow(initial_data)
     
     # Create Elasticsearch client inside the function
     es = Elasticsearch(elastic_host)
+
+    processed_ids = set()
+    if record['id'] in processed_ids:
+        print(f"Record with ID {record['id']} already processed. Skipping.")
+        return
+
+    # Uncomment the following lines to open the CSV file in append mode
+    with open(csv_file_path, 'a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow([record['id'], record['timestamp'], record['text'], record['duration']])
+
+    processed_ids.add(record['id'])
 
     # topic modelling
     dataset = pd.read_csv(csv_file_path)
