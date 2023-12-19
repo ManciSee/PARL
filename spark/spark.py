@@ -134,6 +134,7 @@ from gensim.parsing.preprocessing import preprocess_string
 import re
 import numpy as np
 from typing import Set
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
 def elaborate(batch_df: DataFrame, batch_id: int):
@@ -208,6 +209,9 @@ def write_to_csv_and_send_to_es(record):
 
     processed_ids.add(record['id'])
 
+    #Create an instance of the VADER sentiment analyzer
+    analyzer = SentimentIntensityAnalyzer()
+
     # topic modelling
     dataset = pd.read_csv(csv_file_path)
 
@@ -224,25 +228,28 @@ def write_to_csv_and_send_to_es(record):
         dictionary.add_documents([document])
 
         bow = dictionary.doc2bow(document)
-        lda_model = LdaModel([bow], num_topics=3, id2word=dictionary, passes=15)
+        lda_model = LdaModel([bow], num_topics=6, id2word=dictionary, passes=15)
 
         topics = lda_model[bow]
         dominant_topic = max(topics, key=lambda x: x[1])
         topic_index, topic_score = dominant_topic
 
-        # 3 Topic
-        top_terms = [term for term, _ in lda_model.show_topic(topic_index, topn=3) if not (term.isdigit() or '*' in term)]
+        # 6 Topic
+        top_terms = [term for term, _ in lda_model.show_topic(topic_index, topn=6) if not (term.isdigit() or '*' in term)]
 
         # 1 Topic
         unique_topic = top_terms[0] if top_terms else None
+
+        # Sentiment
+        sentiment_score = analyzer.polarity_scores(record['text'])
 
         results.append({
             'ID': row['id'],
             'Topic': topic_index,
             'Score': topic_score,
             'Top Terms': ' , '.join(top_terms),
-            'Unique Topic': unique_topic
-
+            'Unique Topic': unique_topic,
+            "Sentiment Score" : sentiment_score
         })
     print("Done!")
 
@@ -254,7 +261,8 @@ def write_to_csv_and_send_to_es(record):
         "topic": topic_index,
         "score": topic_score,
         "top_terms": ', '.join(top_terms),
-        "unique_topic": unique_topic
+        "unique_topic": unique_topic,
+        "sentiment_score" : sentiment_score
 
     }
     es.index(index=elastic_index, body=es_data, ignore=400)
