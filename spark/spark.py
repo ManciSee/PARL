@@ -242,14 +242,19 @@ def write_to_csv_and_send_to_es(record):
 
         # Sentiment
         sentiment_score = analyzer.polarity_scores(record['text'])
+        # Check sentiment score range
+        sentiment_text = get_sentiment_text(sentiment_score['compound'])
+
 
         results.append({
             'ID': row['id'],
             'Topic': topic_index,
-            'Score': topic_score,
+            'Topic Score': topic_score,
             'Top Terms': ' , '.join(top_terms),
             'Unique Topic': unique_topic,
-            "Sentiment Score" : sentiment_score
+            "Sentiment Score" : sentiment_score,
+            "Sentiment Text": sentiment_text
+
         })
     print("Done!")
 
@@ -259,15 +264,35 @@ def write_to_csv_and_send_to_es(record):
         "text": record['text'],
         "duration": record['duration'],
         "topic": topic_index,
-        "score": topic_score,
+        "topic_score": topic_score,
         "top_terms": ', '.join(top_terms),
         "unique_topic": unique_topic,
-        "sentiment_score" : sentiment_score
-
+        "sentiment_score" : sentiment_score,
+        "sentiment_text": sentiment_text
     }
     es.index(index=elastic_index, body=es_data, ignore=400)
 
-    print("Send data and topics to es!")
+    print("Send data to es!")
+
+def get_sentiment_text(compound_score):
+    if compound_score >= 0.8:
+        return "Estremamente positivo"
+    elif 0.6 <= compound_score < 0.8:
+        return "Molto positivo"
+    elif 0.4 <= compound_score < 0.6:
+        return "Moderatamente positivo"
+    elif 0.2 <= compound_score < 0.4:
+        return "Leggermente positivo"
+    elif -0.2 < compound_score <= 0.2:
+        return "Neutrale"
+    elif -0.4 < compound_score <= -0.2:
+        return "Leggermente negativo"
+    elif -0.6 < compound_score <= -0.4:
+        return "Moderatamente negativo"
+    elif -0.8 < compound_score <= -0.6:
+        return "Molto negativo"
+    else:
+        return "Estremamente negativo"
 
 print("Reading from Kafka...")
 df = spark \
