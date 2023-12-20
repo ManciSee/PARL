@@ -5,6 +5,7 @@ import json
 import requests
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
+from transformers import pipeline, BartTokenizer, BartForConditionalGeneration
 
 app = Flask(__name__)
 CORS(app)
@@ -58,6 +59,13 @@ def upload_file():
     if file.filename == '':
         return "Nome file vuoto"
 
+    # Text summarizer
+    model_name = "sshleifer/distilbart-cnn-12-6"
+    model_revision = "a4f8f3e"
+    tokenizer = BartTokenizer.from_pretrained(model_name)
+    model = BartForConditionalGeneration.from_pretrained(model_name, revision=model_revision)
+    summarizer = pipeline(task="summarization", model=model, tokenizer=tokenizer)
+
     if file:
         audio_data = io.BytesIO(file.read())
         r = sr.Recognizer()
@@ -72,6 +80,7 @@ def upload_file():
             print("Avvio del riconoscimento vocale...")
 
             start_time = time.time()            
+            # recognized_text = r.recognize_whisper(audio, "medium", False, None, None, False)
             recognized_text = r.recognize_whisper(audio, "small", False, None, None, False)
             end_time = time.time()  
 
@@ -83,11 +92,17 @@ def upload_file():
             print("Elaborazione completata.")
             
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
+
+            # summary
+            summary = summarizer(recognized_text, max_length=130, min_length=30, do_sample=False)
+            summary = summary[0]['summary_text']
+
             streams = {
                     'id': timestamp,
                     'timestamp': timestamp,
                     'text': recognized_text,
-                    'duration': transcription_duration
+                    'duration': transcription_duration,
+                    'summary' : summary
                 }
             headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
             #url = 'http://localhost:9090'

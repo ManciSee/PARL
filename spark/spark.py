@@ -167,28 +167,33 @@ es_mapping = {
             },
             "duration": {
                 "type": "float"
+            },
+            "summary": {  
+                "type": "text"
             }
         }
     }
 }
 
 
+
 schema = StructType([
     StructField("id", StringType(), True),
     StructField("timestamp", StringType(), True),
     StructField("text", StringType(), True),
-    StructField("duration", StringType(), True)
+    StructField("duration", StringType(), True),
+    StructField("summary", StringType(), True)
 ])
 
 def write_to_csv_and_send_to_es(record):
     csv_file_path = "/app/transcription.csv"
-    column_names = ["id", "timestamp", "text", "duration"]
+    column_names = ["id", "timestamp", "text", "duration", "summary"]
 
     is_empty = os.stat(csv_file_path).st_size == 0
 
     if is_empty:
         # If the CSV file is empty, add a new row with initial data
-        initial_data = ["2023-11-22T17:01:59", "2023-11-22T17:01:59", "Initial control phrase", 10.56848359107971]
+        initial_data = ["2023-11-22T17:01:59", "2023-11-22T17:01:59", "Initial control phrase", 10.56848359107971, "Summary control"]
         with open(csv_file_path, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(column_names)
@@ -205,7 +210,7 @@ def write_to_csv_and_send_to_es(record):
     # Uncomment the following lines to open the CSV file in append mode
     with open(csv_file_path, 'a', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow([record['id'], record['timestamp'], record['text'], record['duration']])
+        writer.writerow([record['id'], record['timestamp'], record['text'], record['duration'], record['summary']])
 
     processed_ids.add(record['id'])
 
@@ -254,7 +259,6 @@ def write_to_csv_and_send_to_es(record):
             'Unique Topic': unique_topic,
             "Sentiment Score" : sentiment_score,
             "Sentiment Text": sentiment_text
-
         })
     print("Done!")
 
@@ -262,6 +266,7 @@ def write_to_csv_and_send_to_es(record):
         "id": record['id'],
         "timestamp": record['timestamp'],
         "text": record['text'],
+        "summary": record['summary'],
         "duration": record['duration'],
         "topic": topic_index,
         "topic_score": topic_score,
@@ -304,7 +309,7 @@ df = spark \
 
 df = df.selectExpr("CAST(value AS STRING)")
 df = df.select(from_json("value", schema).alias("data"))
-df = df.select("data.id", "data.timestamp", "data.text", "data.duration")
+df = df.select("data.id", "data.timestamp", "data.text", "data.duration", "data.summary")
 
 print("Saving to CSV and sending to Elasticsearch...")
 df.writeStream \
