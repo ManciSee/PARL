@@ -5,7 +5,7 @@ import json
 import requests
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-from transformers import pipeline, BartTokenizer, BartForConditionalGeneration
+from summarizer import Summarizer
 
 app = Flask(__name__)
 CORS(app)
@@ -60,11 +60,8 @@ def upload_file():
         return "Nome file vuoto"
 
     # Text summarizer
-    model_name = "sshleifer/distilbart-cnn-12-6"
-    model_revision = "a4f8f3e"
-    tokenizer = BartTokenizer.from_pretrained(model_name)
-    model = BartForConditionalGeneration.from_pretrained(model_name, revision=model_revision)
-    summarizer = pipeline(task="summarization", model=model, tokenizer=tokenizer)
+    model_name = 'distilbert-base-uncased'
+    model = Summarizer(model_name)
 
     if file:
         audio_data = io.BytesIO(file.read())
@@ -81,7 +78,7 @@ def upload_file():
 
             start_time = time.time()            
             # recognized_text = r.recognize_whisper(audio, "medium", False, None, None, False)
-            recognized_text = r.recognize_whisper(audio, "small", False, None, None, False)
+            recognized_text = r.recognize_whisper(audio, "medium", False, None, None, False)
             end_time = time.time()  
 
             transcription_duration = end_time - start_time
@@ -94,8 +91,9 @@ def upload_file():
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
 
             # summary
-            summary = summarizer(recognized_text, max_length=130, min_length=30, do_sample=False)
-            summary = summary[0]['summary_text']
+            optimal_k = model.calculate_optimal_k(recognized_text, k_max=10)
+            result = model(recognized_text, min_length=60, num_sentences=optimal_k)
+            summary = ''.join(result)
 
             streams = {
                     'id': timestamp,

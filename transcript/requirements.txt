@@ -6,3 +6,5 @@ Flask-Cors
 torch
 ffmpeg
 soundfile
+sentence-transformers
+bert-extractive-summarizerer
