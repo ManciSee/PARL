@@ -78,7 +78,7 @@ def upload_file():
 
             start_time = time.time()            
             # recognized_text = r.recognize_whisper(audio, "medium", False, None, None, False)
-            recognized_text = r.recognize_whisper(audio, "medium", False, None, None, False)
+            recognized_text = r.recognize_whisper(audio, "small", False, None, None, False)
             end_time = time.time()  
 
             transcription_duration = end_time - start_time

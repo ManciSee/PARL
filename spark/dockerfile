@@ -9,7 +9,7 @@ COPY --from=py3 / /
 
 ARG PYSPARK_VERSION=3.4.0
 RUN pip --no-cache-dir install pyspark==${PYSPARK_VERSION}
-RUN pip --no-cache-dir install elasticsearch numpy pandas gensim typing vaderSentiment googletrans==4.0.0-rc1 langdetect
+RUN pip --no-cache-dir install elasticsearch numpy pandas gensim typing vaderSentiment googletrans==4.0.0-rc1 langdetect nltk
 
 #COPY spark.py .
 # COPY data.csv /app/data.csv

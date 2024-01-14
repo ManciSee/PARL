@@ -12,15 +12,28 @@ import json
 from pyspark.sql.functions import from_json
 from pyspark.sql.types import StructType, StructField, StringType
 import pandas as pd
-from gensim import corpora
-from gensim.models import LdaModel
-from gensim.parsing.preprocessing import preprocess_string
 import re
 import numpy as np
 from typing import Set
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from googletrans import Translator
 from langdetect import detect
+
+# Gensim
+import gensim
+import gensim.corpora as corpora
+from gensim.utils import simple_preprocess
+from gensim.models import CoherenceModel
+
+# Nltk
+import nltk
+# from nltk.stem.porter import PorterStemmer
+# from nltk.stem import WordNetLemmatizer
+# from nltk.tokenize import word_tokenize
+# from nltk.corpus import stopwords
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 
 def elaborate(batch_df: DataFrame, batch_id: int):
@@ -62,7 +75,6 @@ es_mapping = {
 }
 
 
-
 schema = StructType([
     StructField("id", StringType(), True),
     StructField("timestamp", StringType(), True),
@@ -70,6 +82,44 @@ schema = StructType([
     StructField("duration", StringType(), True),
     StructField("summary", StringType(), True)
 ])
+
+def preprocess_text(text):
+    from nltk.stem.porter import PorterStemmer
+    from nltk.stem import WordNetLemmatizer
+    from nltk.tokenize import word_tokenize
+    from nltk.corpus import stopwords
+
+
+    # Tokenization
+    tokens = word_tokenize(text)
+    tokens = [word for word in tokens if word.isalnum()]
+
+    detected_language = detect(text)
+
+    # Stopwords
+    stop_words = set()
+    if detected_language == 'en':
+        stop_words = set(stopwords.words('english'))
+    elif detected_language == 'it':
+        stop_words = set(stopwords.words('italian'))
+    # Add more language cases as needed
+    tokens = [word for word in tokens if word.lower() not in stop_words]
+
+    # Bigram
+    bigram_model = gensim.models.Phrases([tokens], min_count=1, threshold=1)
+    bigram_phraser = gensim.models.phrases.Phraser(bigram_model)
+
+    # Trigram
+    trigram_model = gensim.models.Phrases(bigram_phraser[[tokens]], min_count=1, threshold=1)
+    trigram_phraser = gensim.models.phrases.Phraser(trigram_model)
+
+    # Lemmatizer
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(word) for word in trigram_phraser[bigram_phraser[tokens]]]
+
+    return tokens
+
+analyzer = SentimentIntensityAnalyzer()
 
 def write_to_csv_and_send_to_es(record):
     csv_file_path = "/app/transcription.csv"
@@ -79,7 +129,7 @@ def write_to_csv_and_send_to_es(record):
 
     if is_empty:
         # If the CSV file is empty, add a new row with initial data
-        initial_data = ["2023-11-22T17:01:59", "2023-11-22T17:01:59", "Initial control phrase", 10.56848359107971, "Summary control"]
+        initial_data = ["2023-11-22T17:01:59", "2023-11-22T17:01:59", "PARL: Process Analysis Real Time Language Application", 20.01018359107971, "A.A. 2022/2023"]
         with open(csv_file_path, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(column_names)
@@ -100,36 +150,43 @@ def write_to_csv_and_send_to_es(record):
 
     processed_ids.add(record['id'])
 
-    #Create an instance of the VADER sentiment analyzer
-    analyzer = SentimentIntensityAnalyzer()
-
     # Translate to en
     translator = Translator()
 
-    # topic modelling
     dataset = pd.read_csv(csv_file_path)
 
     np.random.seed(42)
 
-    dictionary = corpora.Dictionary()
+    #dictionary = corpora.Dictionary()
 
     results = []
 
     print("Finding topic...")
-    # Itera su ogni riga del dataset
     for index, row in dataset.iterrows():
-        document = preprocess_string(row['text'])
-        dictionary.add_documents([document])
+        result_words = []
 
-        bow = dictionary.doc2bow(document)
-        lda_model = LdaModel([bow], num_topics=6, id2word=dictionary, passes=15)
+        tokens = preprocess_text(row['text'])
 
-        topics = lda_model[bow]
-        dominant_topic = max(topics, key=lambda x: x[1])
-        topic_index, topic_score = dominant_topic
+        # Corpus
+        id2word = corpora.Dictionary([tokens])
+        corpus = [id2word.doc2bow(tokens)]
 
-        # 6 Topic
-        top_terms = [term for term, _ in lda_model.show_topic(topic_index, topn=6) if not (term.isdigit() or '*' in term)]
+        lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=10, random_state=100, update_every=1, chunksize=100, passes=10, alpha="auto", per_word_topics=True)
+
+        topics = lda_model.print_topics()
+
+        unique_words = set()
+
+        for topic in topics:
+            topic_words = [word.split('*')[1].strip().replace('"', '') for word in topic[1].split('+')]
+            for word in topic_words:
+                if word not in unique_words:
+                    unique_words.add(word)
+                    result_words.append(word)
+                    break
+
+        result_string = ', '.join(result_words)
+
 
         # Detect language for VADER, because it works better with en
         detected_language = detect(record['text'])
@@ -148,9 +205,9 @@ def write_to_csv_and_send_to_es(record):
 
         results.append({
             'ID': row['id'],
-            'Topic': topic_index,
-            'Topic Score': topic_score,
-            'Top Terms': ' , '.join(top_terms),
+            #'Topic': topic_index,
+            #'Topic Score': topic_score,
+            'Top Terms': result_string,
             "Sentiment Score" : sentiment_score,
             "Sentiment Text": sentiment_text,
         })
@@ -162,9 +219,9 @@ def write_to_csv_and_send_to_es(record):
         "text": record['text'],
         "summary": record['summary'],
         "duration": record['duration'],
-        "topic": topic_index,
-        "topic_score": topic_score,
-        "top_terms": ', '.join(top_terms),
+        #"topic": topic_index,
+        #"topic_score": topic_score,
+        "top_terms": result_string,
         "sentiment_score" : sentiment_score,
         "sentiment_text": sentiment_text,
     }
