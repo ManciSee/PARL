@@ -1,4 +1,3 @@
-
 from __future__ import print_function
 import sys
 import os
@@ -24,17 +23,13 @@ import gensim
 import gensim.corpora as corpora
 from gensim.utils import simple_preprocess
 from gensim.models import CoherenceModel
+from operator import itemgetter
 
 # Nltk
 import nltk
-# from nltk.stem.porter import PorterStemmer
-# from nltk.stem import WordNetLemmatizer
-# from nltk.tokenize import word_tokenize
-# from nltk.corpus import stopwords
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
-
 
 def elaborate(batch_df: DataFrame, batch_id: int):
     batch_df.show(truncate=False)
@@ -67,13 +62,12 @@ es_mapping = {
             "duration": {
                 "type": "float"
             },
-            "summary": {  
+            "summary": {
                 "type": "text"
             }
         }
     }
 }
-
 
 schema = StructType([
     StructField("id", StringType(), True),
@@ -88,7 +82,6 @@ def preprocess_text(text):
     from nltk.stem import WordNetLemmatizer
     from nltk.tokenize import word_tokenize
     from nltk.corpus import stopwords
-
 
     # Tokenization
     tokens = word_tokenize(text)
@@ -134,7 +127,7 @@ def write_to_csv_and_send_to_es(record):
             writer = csv.writer(f)
             writer.writerow(column_names)
             writer.writerow(initial_data)
-    
+
     # Create Elasticsearch client inside the function
     es = Elasticsearch(elastic_host)
 
@@ -157,60 +150,65 @@ def write_to_csv_and_send_to_es(record):
 
     np.random.seed(42)
 
-    #dictionary = corpora.Dictionary()
-
     results = []
 
+    dominant_topics = []
+    dominant_topic_percentages = []
+    topic_keywords = []
+
     print("Finding topic...")
-    for index, row in dataset.iterrows():
-        result_words = []
 
-        tokens = preprocess_text(row['text'])
+    # Prendi solo l'ultima riga del dataset
+    row = dataset.iloc[-1]
+    result_words = []
 
-        # Corpus
-        id2word = corpora.Dictionary([tokens])
-        corpus = [id2word.doc2bow(tokens)]
+    tokens = preprocess_text(row['text'])
 
-        lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=10, random_state=100, update_every=1, chunksize=100, passes=10, alpha="auto", per_word_topics=True)
+    # Corpus
+    id2word = corpora.Dictionary([tokens])
+    corpus = [id2word.doc2bow(tokens)]
 
-        topics = lda_model.print_topics()
+    lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=10, random_state=100, update_every=1, chunksize=100, passes=10, alpha="auto", per_word_topics=True)
 
-        unique_words = set()
+    topics = lda_model.print_topics()
 
-        for topic in topics:
-            topic_words = [word.split('*')[1].strip().replace('"', '') for word in topic[1].split('+')]
-            for word in topic_words:
-                if word not in unique_words:
-                    unique_words.add(word)
-                    result_words.append(word)
-                    break
+    unique_words = set()
 
-        result_string = ', '.join(result_words)
+    coherence_model_lda = CoherenceModel(model=lda_model, texts=[tokens], dictionary=id2word, coherence='c_v')
+    coherence_lda = coherence_model_lda.get_coherence()
 
+    topic_scores = sorted(lda_model.get_document_topics(corpus[0], minimum_probability=0), key=itemgetter(1), reverse=True)
 
-        # Detect language for VADER, because it works better with en
-        detected_language = detect(record['text'])
-        if detected_language != 'en':
-            # If the detected language is not English, translate the text
-            translation = translator.translate(record['text'], dest='en').text
-        else:
-            # If the detected language is already English, use the original text
-            translation = record['text']
+    dominant_topic, dominant_topic_percentage = topic_scores[0]
 
-        # Sentiment
-        sentiment_score = analyzer.polarity_scores(translation)
+    topic_keywords = [word for word, _ in lda_model.show_topic(dominant_topic)]
 
-        # Check sentiment score range
-        sentiment_text = get_sentiment_text(sentiment_score['compound'])
+    dominant_topics = [dominant_topic]
+    dominant_topic_percentages = [dominant_topic_percentage]
 
-        results.append({
-            'ID': row['id'],
-            #'Topic': topic_index,
-            #'Topic Score': topic_score,
-            'Top Terms': result_string,
-            "Sentiment Score" : sentiment_score,
-            "Sentiment Text": sentiment_text,
-        })
+    # Detect language for VADER, because it works better with en
+    detected_language = detect(record['text'])
+    if detected_language != 'en':
+        # If the detected language is not English, translate the text
+        translation = translator.translate(record['text'], dest='en').text
+    else:
+        # If the detected language is already English, use the original text
+        translation = record['text']
+
+    # Sentiment
+    sentiment_score = analyzer.polarity_scores(translation)
+
+    # Check sentiment score range
+    sentiment_text = get_sentiment_text(sentiment_score['compound'])
+
+    results.append({
+        'ID': row['id'],
+        'Topic': dominant_topics,
+        'Topic Score': dominant_topic_percentages,
+        'Top Terms': topic_keywords,
+        "Sentiment Score" : sentiment_score,
+        "Sentiment Text": sentiment_text,
+    })
     print("Done!")
 
     es_data = {
@@ -219,9 +217,9 @@ def write_to_csv_and_send_to_es(record):
         "text": record['text'],
         "summary": record['summary'],
         "duration": record['duration'],
-        #"topic": topic_index,
-        #"topic_score": topic_score,
-        "top_terms": result_string,
+        "topic":dominant_topics,
+        "topic_score":dominant_topic_percentages,
+        "top_terms": topic_keywords,
         "sentiment_score" : sentiment_score,
         "sentiment_text": sentiment_text,
     }
