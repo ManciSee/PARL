@@ -3,28 +3,72 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Audio Inventory</title>
+  <title>PARL: Process Analysis Real Time Language</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
   <!-- <link rel="stylesheet" href="../styles/styles.css"> -->
 </head>
 
-<body class="flex items-center justify-center h-screen bg-gray-200">
-  <div
-    class="text-center p-8 bg-white rounded-2xl shadow-2xl transition duration-300 ease-in-out transform hover:scale-105">
-    <h1 class="text-4xl font-bold text-gray-800">Audio Inventory</h1>
-    <p class="mt-2 text-md text-gray-600">Avvia la registrazione e parla chiaramente, poi premi stop per ottenere la
-      trascrizione. Oppure carica un file WAV per ottenere la trascrizione.</p>
-    <div class="mt-6 relative">
-      <a id="start-btn"
-        class="btn-start inline-block px-6 py-3 mx-2 bg-green-500 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-green-600 transition duration-200">Avvia
-        Registrazione</a>
-      <div id="recording-indicator" class="hidden"></div>
+<body class=" mx-48 items-center justify-center h-screen" style="color: #F7F6F4;">
+  <div class="flex items-start justify-between w-full">
+    <div>
+      <h1 class="pt-32 font-extrabold text-4xl" style="color: #374c55;">PARL</h1>
+      <h3 class="pt-2 font-bold" style="color: #374c55;"> Process Analysis Real Time Language Application</h3>
+      <h3 class="pt-12 text-white" style="color: #374c55;">Version 1.0 - March 2023 - Github <a style="color: #5aab68;"
+          class="text-blue-700" href="https://github.com/ManciSee/">@ManciSee</a>
+      </h3>
 
-      <a id="stop-btn" style="display: none;"
-        class="btn-stop inline-block px-6 py-3 mx-2 bg-red-500 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-red-600 transition duration-200 ">Interrompi
-        Registrazione</a>
     </div>
-    <div id="transcription-box" class="mt-6 p-6 bg-yellow-100 text-gray-800 rounded-lg shadow-inner">
+    <aside class="pt-20">
+      <img src="{{url_for('static', filename='Parlogo.png')}}" class=" h-64 w-64" alt="Logo">
+    </aside>
+  </div>
+  <div class=" border-2 border-gray-200  p-8 rounded-2xl shadow-2xl ">
+    <h5 class=" font-bold" style="color: #374c55;">Select prefered Audio Input Option</h5>
+    <p class="mt-2 text-md" style="color: #374c55;">Avvia la registrazione e parla chiaramente, poi premi stop per
+      ottenere la
+      trascrizione. Oppure carica un file WAV per ottenere la trascrizione.</p>
+    <div class="mt-6 w-full justify-center flex flex-row">
+      <div>
+        <a style="background-color: #5aab68;" id="start-btn"
+          class="btn-start inline-block px-6 py-3 mx-2 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-green transition duration-200">Avvia
+          Registrazione</a>
+
+        <a id="stop-btn" style="display: none; background-color: #f44336;"
+          class="btn-stop inline-block px-6 py-3 mx-2 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-red-600 transition duration-200 ">Interrompi
+          Registrazione</a>
+      </div>
+      <div class="ml-48 flex flex-row " style="color: #d89a30;">
+        <label for="fileInput" class="cursor-pointer  inline-block mx-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            class="h-6 w-6 inline-block">
+            <svg viewBox="0 0 24 24" fill="#374c55" xmlns="http://www.w3.org/2000/svg" stroke="#000000"
+              stroke-width="0.336" transform="rotate(0)">
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+              <g id="SVGRepo_iconCarrier">
+                <path
+                  d="M12.5535 2.49392C12.4114 2.33852 12.2106 2.25 12 2.25C11.7894 2.25 11.5886 2.33852 11.4465 2.49392L7.44648 6.86892C7.16698 7.17462 7.18822 7.64902 7.49392 7.92852C7.79963 8.20802 8.27402 8.18678 8.55352 7.88108L11.25 4.9318V16C11.25 16.4142 11.5858 16.75 12 16.75C12.4142 16.75 12.75 16.4142 12.75 16V4.9318L15.4465 7.88108C15.726 8.18678 16.2004 8.20802 16.5061 7.92852C16.8118 7.64902 16.833 7.17462 16.5535 6.86892L12.5535 2.49392Z"
+                  fill="#1C274C"></path>
+                <path
+                  d="M3.75 15C3.75 14.5858 3.41422 14.25 3 14.25C2.58579 14.25 2.25 14.5858 2.25 15V15.0549C2.24998 16.4225 2.24996 17.5248 2.36652 18.3918C2.48754 19.2919 2.74643 20.0497 3.34835 20.6516C3.95027 21.2536 4.70814 21.5125 5.60825 21.6335C6.47522 21.75 7.57754 21.75 8.94513 21.75H15.0549C16.4225 21.75 17.5248 21.75 18.3918 21.6335C19.2919 21.5125 20.0497 21.2536 20.6517 20.6516C21.2536 20.0497 21.5125 19.2919 21.6335 18.3918C21.75 17.5248 21.75 16.4225 21.75 15.0549V15C21.75 14.5858 21.4142 14.25 21 14.25C20.5858 14.25 20.25 14.5858 20.25 15C20.25 16.4354 20.2484 17.4365 20.1469 18.1919C20.0482 18.9257 19.8678 19.3142 19.591 19.591C19.3142 19.8678 18.9257 20.0482 18.1919 20.1469C17.4365 20.2484 16.4354 20.25 15 20.25H9C7.56459 20.25 6.56347 20.2484 5.80812 20.1469C5.07435 20.0482 4.68577 19.8678 4.40901 19.591C4.13225 19.3142 3.9518 18.9257 3.85315 18.1919C3.75159 17.4365 3.75 16.4354 3.75 15Z"
+                  fill="#1C274C"></path>
+              </g>
+            </svg> </svg>
+        </label>
+        <div class="flex flex-col items-center">
+          <input type="file" id="fileInput" class="hidden text-black">
+          <div class="ml-2">Carica il file da trascrivere</div>
+          <div class="mt-8 text-center">
+            <button style="background-color: #d89a30;" onclick="uploadFile()"
+              class="btn-upload inline-block px-6 py-3  text-white rounded-lg font-semibold shadow-md transition duration-200 items-center ">Invia</button>
+            <div id="loading-indicator" class="mt-4 text-gray-600" style="display: none;">
+              Trascrizione in corso...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="transcription-box" style="background-color: #374C55;" class="mt-6 p-6 text-white rounded-lg shadow-inner">
       <div id="t-int-box">
         <p id="transcript" tp="trascription" style="display: none;" class="font-semibold text-lg mb-4"></p>
       </div>
@@ -32,18 +76,31 @@
         class="btn-clear text-blue-400 bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200"
         onclick="clearTranscription()">Cancella</button>
     </div>
-    <div class="mt-8">
-      <input type="file" id="fileInput" class="block mb-4 p-2 w-full mx-auto border-2 border-gray-300 rounded-lg ">
-      <button onclick="uploadFile()"
-        class="btn-upload inline-block px-6 py-3 bg-blue-400 text-white rounded-lg font-semibold shadow-md hover:bg-blue-500 transition duration-200 ">Carica
-        e Trascrivi</button>
-      <div id="loading-indicator" class="mt-4 text-gray-600" style="display: none;">
-        Trascrizione in corso...
+  </div>
+
+  <!-- SECOND SECTION -->
+
+  <div style="background-color: #629493;" class=" mt-6 border-2 border-gray-200  p-8 rounded-2xl shadow-2xl ">
+    <h5 class="text-center font-bold text-white">Select prefered Audio Input Option</h5>
+    <p class="mt-2 text-md text-white">Avvia la registrazione e parla chiaramente, poi premi stop per ottenere la
+      trascrizione. Oppure carica un file WAV per ottenere la trascrizione.</p>
+    <div class="mt-6 w-full justify-center flex flex-row">
+      <div>
       </div>
-
-
+      <div>
+      </div>
     </div>
   </div>
+
+
+  <!-- KIBANA DASHBOARD -->
+  <div style="background-color: #F7F6F4;" class="mt-6 border-2 border-gray-200 p-8 rounded-2xl shadow-2xl">
+    <iframe
+      src="http://192.168.66.231:5601/app/dashboards#/view/20cdf640-a1b7-11ee-8588-2fc56c075192?embed=true&_g=(refreshInterval:(pause:!t,value:10000),time:(from:'2023-12-17T19:34:29.995Z',to:'2024-01-20T19:49:32.694Z'))&_a=()"
+      height="800" width="1000"></iframe>
+  </div>
+
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <!-- CON TIMER -->

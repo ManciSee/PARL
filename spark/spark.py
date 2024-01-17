@@ -96,6 +96,7 @@ def preprocess_text(text):
     elif detected_language == 'it':
         stop_words = set(stopwords.words('italian'))
     # Add more language cases as needed
+
     tokens = [word for word in tokens if word.lower() not in stop_words]
 
     # Bigram
@@ -113,6 +114,7 @@ def preprocess_text(text):
     return tokens
 
 analyzer = SentimentIntensityAnalyzer()
+
 
 def write_to_csv_and_send_to_es(record):
     csv_file_path = "/app/transcription.csv"
@@ -183,6 +185,9 @@ def write_to_csv_and_send_to_es(record):
 
     topic_keywords = [word for word, _ in lda_model.show_topic(dominant_topic)]
 
+    top_terms_string = ", ".join(topic_keywords)
+
+
     dominant_topics = [dominant_topic]
     dominant_topic_percentages = [dominant_topic_percentage]
 
@@ -205,7 +210,7 @@ def write_to_csv_and_send_to_es(record):
         'ID': row['id'],
         'Topic': dominant_topics,
         'Topic Score': dominant_topic_percentages,
-        'Top Terms': topic_keywords,
+        'Top Terms': top_terms_string,
         "Sentiment Score" : sentiment_score,
         "Sentiment Text": sentiment_text,
     })
@@ -219,7 +224,7 @@ def write_to_csv_and_send_to_es(record):
         "duration": record['duration'],
         "topic":dominant_topics,
         "topic_score":dominant_topic_percentages,
-        "top_terms": topic_keywords,
+        "top_terms": top_terms_string,
         "sentiment_score" : sentiment_score,
         "sentiment_text": sentiment_text,
     }
