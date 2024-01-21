@@ -24,18 +24,18 @@
   </div>
   <div class=" border-2 border-gray-200  p-8 rounded-2xl shadow-2xl ">
     <h5 class=" font-bold" style="color: #374c55;">Select prefered Audio Input Option</h5>
-    <p class="mt-2 text-md" style="color: #374c55;">Avvia la registrazione e parla chiaramente, poi premi stop per
-      ottenere la
-      trascrizione. Oppure carica un file WAV per ottenere la trascrizione.</p>
+    <p class="mt-2 text-md" style="color: #374c55;">
+      Start the recording and speak clearly, then press stop to obtain the transcription. Alternatively, upload a WAV
+      file to get the transcription.</p>
     <div class="mt-6 w-full justify-center flex flex-row">
       <div>
         <a style="background-color: #5aab68;" id="start-btn"
-          class="btn-start inline-block px-6 py-3 mx-2 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-green transition duration-200">Avvia
-          Registrazione</a>
+          class="btn-start inline-block px-6 py-3 mx-2 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-green transition duration-200">Start
+          Recording</a>
 
         <a id="stop-btn" style="display: none; background-color: #f44336;"
-          class="btn-stop inline-block px-6 py-3 mx-2 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-red-600 transition duration-200 ">Interrompi
-          Registrazione</a>
+          class="btn-stop inline-block px-6 py-3 mx-2 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-red-600 transition duration-200 ">Stop
+          Recording</a>
       </div>
       <div class="ml-48 flex flex-row " style="color: #d89a30;">
         <label for="fileInput" class="cursor-pointer  inline-block mx-2">
@@ -57,32 +57,41 @@
         </label>
         <div class="flex flex-col items-center">
           <input type="file" id="fileInput" class="hidden text-black">
-          <div class="ml-2">Carica il file da trascrivere</div>
+          <div class="ml-2">Upload the file to transcribe.</div>
           <div class="mt-8 text-center">
             <button style="background-color: #d89a30;" onclick="uploadFile()"
-              class="btn-upload inline-block px-6 py-3  text-white rounded-lg font-semibold shadow-md transition duration-200 items-center ">Invia</button>
+              class="btn-upload inline-block px-6 py-3  text-white rounded-lg font-semibold shadow-md transition duration-200 items-center ">Submit</button>
             <div id="loading-indicator" class="mt-4 text-gray-600" style="display: none;">
-              Trascrizione in corso...
-            </div>
+              Transcription in progress...</div>
           </div>
         </div>
       </div>
     </div>
-    <div id="transcription-box" style="background-color: #374C55;" class="mt-6 p-6 text-white rounded-lg shadow-inner">
+    <div id="transcription-box" style="background-color: #374C55;"
+      class="text-center mt-6 p-6 text-white rounded-lg shadow-inner">
       <div id="t-int-box">
         <p id="transcript" tp="trascription" style="display: none;" class="font-semibold text-lg mb-4"></p>
       </div>
-      <button id="clearBtn" style="display: none;"
-        class="btn-clear text-blue-400 bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200"
-        onclick="clearTranscription()">Cancella</button>
+      <button id="clearBtn" style="display: none; color: #374C55;"
+        class="btn-clear bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200"
+        onclick="clearTranscription()">Clear</button>
     </div>
   </div>
 
-  <!-- SECOND SECTION -->
+  <!-- TOPIC MODELLING -->
+  <div style="background-color: #629493;" class=" mt-6 border-2 border-gray-200 p-8 rounded-2xl shadow-2xl ">
+    <h5 class="mb-4 text-center font-bold text-white">Real Time Topic Modelling</h5>
+    <iframe class="rounded-2xl"
+      src="http://192.168.66.231:5601/app/dashboards#/view/39855e40-b845-11ee-833e-63a9d81f23fd?embed=true&_g=(refreshInterval:(pause:!t,value:10000),time:(from:'2024-01-14T00:30:00.000Z',to:now))&_a=()&show-time-filter=true"
+      height="800" width="1000"></iframe>
+  </div>
 
-  <div style="background-color: #629493;" class=" mt-6 border-2 border-gray-200  p-8 rounded-2xl shadow-2xl ">
-    <h5 class="text-center font-bold text-white">Select prefered Audio Input Option</h5>
-    <p class="mt-2 text-md text-white">Avvia la registrazione e parla chiaramente, poi premi stop per ottenere la
+  <!-- INFO SECTION -->
+
+  <div style="background-color: #F7F6F4;" class=" mt-6 border-2 border-gray-200  p-8 rounded-2xl shadow-2xl ">
+    <h5 class="text-center font-bold" style="color: #374c55;">Select prefered Audio Input Option</h5>
+    <p class="mt-2 text-md" style="color: #374c55;">Avvia la registrazione e parla chiaramente, poi premi stop per
+      ottenere la
       trascrizione. Oppure carica un file WAV per ottenere la trascrizione.</p>
     <div class="mt-6 w-full justify-center flex flex-row">
       <div>
@@ -92,42 +101,9 @@
     </div>
   </div>
 
-  <!-- TOPIC MODELLING -->
-  <div style="background-color: #F7F6F4;" class=" mt-6 border-2 border-gray-200 p-8 rounded-2xl shadow-2xl ">
-    <h5 class="mb-4 text-center font-bold text-white" style="color: #374c55;">Real Time Topic Modelling</h5>
-    <iframe class="rounded-2xl"
-      src="http://192.168.66.231:5601/app/dashboards#/view/c3573b40-b5eb-11ee-833e-63a9d81f23fd?embed=true&_g=(refreshInterval:(pause:!t,value:10000),time:(from:'2024-01-01T08:08:45.928Z',to:now))&_a=()&show-time-filter=true"
-      height="550" width="1000"></iframe>
-  </div>
-
-  <!-- WORD CLOUD -->
-  <div style="background-color: #F7F6F4;" class=" mt-6 border-2 border-gray-200 p-8 rounded-2xl shadow-2xl ">
-    <h5 class="mb-4 text-center font-bold text-white" style="color: #374c55;">Real Time Topic Modelling</h5>
-    <iframe class="rounded-2xl"
-      src="http://192.168.66.231:5601/app/dashboards#/view/7e0af8c0-b5f4-11ee-833e-63a9d81f23fd?embed=true&_g=(refreshInterval:(pause:!t,value:60000),time:(from:'2024-01-14T17:24:45.000Z',to:'2024-01-18T00:45:33.000Z'))&_a=()&show-top-menu=true&show-query-input=true&show-time-filter=true"
-      height="550" width="1000"></iframe>
-  </div>
 
 
-  <!-- SENTIMENT ANALYSIS -->
-  <div style="background-color: #F7F6F4; color: #374c55;"
-    class=" mt-6 border-2 border-gray-200 p-8 rounded-2xl shadow-2xl ">
-    <h5 class="mb-4 text-center font-bold" style="color: #374c55;">Real Time Sentiment Analysis</h5>
-    <iframe class="rounded-2xl"
-      src="
-      http://192.168.66.231:5601/app/dashboards#/view/73395d80-b5ed-11ee-833e-63a9d81f23fd?embed=true&_g=(refreshInterval:(pause:!t,value:10000),time:(from:'2024-01-01T08:08:45.928Z',to:now))&_a=()&show-time-filter=true"
-      height="550" width="1000"></iframe>
-  </div>
 
-  <!-- TOPIC - SENTIMENT -->
-  <div style="background-color: #F7F6F4; color: #374c55;"
-    class=" mt-6 border-2 border-gray-200 p-8 rounded-2xl shadow-2xl ">
-    <h5 class="mb-4 text-center font-bold" style="color: #374c55;">Real Time Sentiment Analysis</h5>
-    <iframe class="rounded-2xl"
-      src="
-      http://192.168.66.231:5601/app/dashboards#/view/517a6ba0-b5f0-11ee-833e-63a9d81f23fd?embed=true&_g=(refreshInterval:(pause:!t,value:60000),time:(from:'2024-01-13T17:24:45.000Z',to:now))&_a=()&show-top-menu=true&show-query-input=true&show-time-filter=true"
-      height=" 550" width="1000"></iframe>
-  </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
