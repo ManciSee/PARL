@@ -163,7 +163,7 @@
 
     function clearTranscription() {
       let allElements = document.querySelectorAll('p[tp=trascription]')
-      for (let el of allElements) el.remove()
+      for (let el of allElements) el.textContent = "";
       document.getElementById('clearBtn').style.display = 'none'
 
       transcriptParts = [];
@@ -179,7 +179,7 @@
 
       // change language 
       recognition.lang = "it-IT";
-      recognition.interimResults = false;
+      recognition.interimResults = true;
 
       function sendTranscript(text, duration) {
         if (transcriptParts.length > 0) {
@@ -212,31 +212,40 @@
         document.getElementById("stop-btn").style.display = "inline";
         isRecording = true;
         startTime = new Date();
+        let cloneEl = document.createElement('p')
+        cloneEl.setAttribute('tp', 'trascription')
+        document.getElementById('transcript').innerHTML = ""
+        document.getElementById('transcript').style.display = "block"
+
+        var contenitore = document.querySelector('#t-int-box');
+        contenitore.append(cloneEl)
       };
 
-      recognition.onresult = function (event) {
-        const transcript = event.results[event.resultIndex][0].transcript;
-        document.getElementById("transcript").textContent += transcript;
 
-        transcriptParts.push(transcript);
-      };
+
+      recognition.onresult = event => {
+        let interimTranscript = ''
+        // console.log(event)
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          interimTranscript += transcript;
+          console.log(interimTranscript)
+          document.getElementById("transcript").textContent = interimTranscript;
+
+        }
+      }
 
       recognition.onend = function () {
+        debugger
         endTime = new Date();
         const duration = (endTime - startTime) / 1000;
         if (isRecording) {
+          transcriptParts.push(document.getElementById("transcript").textContent);
           sendTranscript(document.getElementById("transcript").textContent, duration);
           isRecording = false;
         }
         document.getElementById("start-btn").style.display = "inline";
         document.getElementById("stop-btn").style.display = "none";
-        let cloneEl = document.createElement('p')
-        cloneEl.setAttribute('tp', 'trascription')
-        cloneEl.textContent = document.getElementById('transcript').textContent
-
-        document.getElementById('transcript').innerHTML = ""
-        var contenitore = document.querySelector('#t-int-box');
-        contenitore.append(cloneEl)
         document.getElementById('clearBtn').style.display = 'inline'
       };
 
@@ -245,7 +254,7 @@
       };
 
       document.getElementById("start-btn").addEventListener("click", function () {
-        recognition.start(); // Avvia il riconoscimento vocale
+        recognition.start();
 
         setInterval(function () {
           if (isRecording) {
@@ -263,7 +272,7 @@
 
     document.getElementById('start-btn').addEventListener('click', function () {
       var indicator = document.getElementById('recording-indicator');
-      indicator.classList.toggle('hidden');
+      // indicator.classList.toggle('hidden');
     });
   </script>
 </body>
