@@ -37,8 +37,8 @@
           class="btn-stop inline-block px-6 py-3 mx-2 text-white rounded-lg font-semibold shadow-md cursor-pointer hover:bg-red-600 transition duration-200 ">Stop
           Recording</a>
       </div>
-      <div class="ml-48 flex flex-row " style="color: #d89a30;">
-        <label for="fileInput" class="cursor-pointer  inline-block mx-2">
+      <div class="ml-48 flex flex-row text-yellow-500">
+        <label for="fileInput" class="cursor-pointer inline-block mx-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
             class="h-6 w-6 inline-block">
             <svg viewBox="0 0 24 24" fill="#374c55" xmlns="http://www.w3.org/2000/svg" stroke="#000000"
@@ -53,16 +53,18 @@
                   d="M3.75 15C3.75 14.5858 3.41422 14.25 3 14.25C2.58579 14.25 2.25 14.5858 2.25 15V15.0549C2.24998 16.4225 2.24996 17.5248 2.36652 18.3918C2.48754 19.2919 2.74643 20.0497 3.34835 20.6516C3.95027 21.2536 4.70814 21.5125 5.60825 21.6335C6.47522 21.75 7.57754 21.75 8.94513 21.75H15.0549C16.4225 21.75 17.5248 21.75 18.3918 21.6335C19.2919 21.5125 20.0497 21.2536 20.6517 20.6516C21.2536 20.0497 21.5125 19.2919 21.6335 18.3918C21.75 17.5248 21.75 16.4225 21.75 15.0549V15C21.75 14.5858 21.4142 14.25 21 14.25C20.5858 14.25 20.25 14.5858 20.25 15C20.25 16.4354 20.2484 17.4365 20.1469 18.1919C20.0482 18.9257 19.8678 19.3142 19.591 19.591C19.3142 19.8678 18.9257 20.0482 18.1919 20.1469C17.4365 20.2484 16.4354 20.25 15 20.25H9C7.56459 20.25 6.56347 20.2484 5.80812 20.1469C5.07435 20.0482 4.68577 19.8678 4.40901 19.591C4.13225 19.3142 3.9518 18.9257 3.85315 18.1919C3.75159 17.4365 3.75 16.4354 3.75 15Z"
                   fill="#1C274C"></path>
               </g>
-            </svg> </svg>
+            </svg>
+          </svg>
         </label>
         <div class="flex flex-col items-center">
-          <input type="file" id="fileInput" class="hidden text-black">
-          <div class="ml-2">Upload the file to transcribe.</div>
+          <input type="file" id="fileInput" class="hidden text-black" onchange="updateFileNameDisplay()">
+          <div class="ml-2" id="fileNameDisplay">Upload the file to transcribe.</div>
           <div class="mt-8 text-center">
             <button style="background-color: #d89a30;" onclick="uploadFile()"
-              class="btn-upload inline-block px-6 py-3  text-white rounded-lg font-semibold shadow-md transition duration-200 items-center ">Submit</button>
-            <div id="loading-indicator" class="mt-4 text-gray-600" style="display: none;">
-              Transcription in progress...</div>
+              class="btn-upload inline-block px-6 py-3 text-white rounded-lg font-semibold shadow-md transition duration-200 items-center">Submit</button>
+            <div id="loading-indicator" class="mt-4 text-gray-600 hidden">
+              Transcription in progress...
+            </div>
           </div>
         </div>
       </div>
@@ -75,6 +77,17 @@
       <button id="clearBtn" style="display: none; color: #374C55;"
         class="btn-clear bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200"
         onclick="clearTranscription()">Clear</button>
+    </div>
+
+    <!-- SUMMARY DIV -->
+    <h5 class=" font-bold mt-10" style="color: #374c55;">Summary of the uploaded file</h5>
+    <div id="summary-box" style="background-color: #374C55;"
+      class="text-center mt-6 p-6 text-white rounded-lg shadow-inner">
+
+      <p id="summary-text" class="font-semibold text-lg mb-4"></p>
+      <button id="clearSummaryBtn" style="color: #374C55;"
+        class="btn-clear bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200"
+        onclick="clearSummary()">Clear</button>
     </div>
   </div>
 
@@ -101,14 +114,22 @@
     </div>
   </div>
 
-
-
-
-
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <!-- CON TIMER -->
   <script>
+
+    function updateFileNameDisplay() {
+      const fileInput = document.getElementById('fileInput');
+      const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+      if (fileInput.files.length > 0) {
+        fileNameDisplay.textContent = fileInput.files[0].name;
+      } else {
+        fileNameDisplay.textContent = 'Upload the file to transcribe.';
+      }
+    }
+
     let transcriptParts = [];
 
     function uploadFile() {
@@ -119,7 +140,6 @@
         const formData = new FormData();
         formData.append('file', file);
         document.getElementById('loading-indicator').style.display = 'block';
-
 
         // fetch('http://localhost:8880/upload', {
         //     method: 'POST',
@@ -141,6 +161,11 @@
                 var contenitore = document.querySelector('#t-int-box');
                 contenitore.append(cloneEl)
                 document.getElementById('clearBtn').style.display = 'inline'
+
+                // Mostra il riassunto
+                document.getElementById('summary-text').textContent = respObject["summary"];
+                document.getElementById('summary-box').style.display = 'block';
+
 
                 return respObject["text"]
               })
@@ -167,6 +192,11 @@
       document.getElementById('clearBtn').style.display = 'none'
 
       transcriptParts = [];
+    }
+
+    function clearSummary() {
+      document.getElementById('summary-text').textContent = "";
+      document.getElementById('clearSummaryBtn').style.display = 'none';
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;

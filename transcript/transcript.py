@@ -92,7 +92,7 @@ def upload_file():
 
             # summary
             optimal_k = model.calculate_optimal_k(recognized_text, k_max=10)
-            result = model(recognized_text, min_length=60, num_sentences=optimal_k)
+            result = model(recognized_text, min_length=100, num_sentences=optimal_k)
             summary = ''.join(result)
 
             streams = {
