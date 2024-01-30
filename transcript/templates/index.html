@@ -80,14 +80,16 @@
     </div>
 
     <!-- SUMMARY DIV -->
-    <h5 class=" font-bold mt-10" style="color: #374c55;">Summary of the uploaded file</h5>
-    <div id="summary-box" style="background-color: #374C55;"
-      class="text-center mt-6 p-6 text-white rounded-lg shadow-inner">
+    <div class="hidden" id="summarybox">
+      <h5 class=" font-bold mt-10" style="color: #374c55;">Summary of the uploaded file</h5>
+      <div id="summary-box" style="background-color: #374C55;"
+        class="text-center mt-6 p-6 text-white rounded-lg shadow-inner">
 
-      <p id="summary-text" class="font-semibold text-lg mb-4"></p>
-      <button id="clearSummaryBtn" style="color: #374C55;"
-        class="btn-clear bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200"
-        onclick="clearSummary()">Clear</button>
+        <p id="summary-text" class="font-semibold text-lg mb-4"></p>
+        <button id="clearSummaryBtn" style="color: #374C55;"
+          class="btn-clear bg-white px-4 py-2 rounded font-medium hover:bg-gray-100 transition duration-200"
+          onclick="clearSummary()">Clear</button>
+      </div>
     </div>
   </div>
 
@@ -135,10 +137,12 @@
     function uploadFile() {
       const input = document.getElementById('fileInput');
       const file = input.files[0];
+      document.getElementById("summarybox").classList.add("hidden");
 
       if (file) {
         const formData = new FormData();
         formData.append('file', file);
+
         document.getElementById('loading-indicator').style.display = 'block';
 
         // fetch('http://localhost:8880/upload', {
@@ -166,7 +170,7 @@
                 document.getElementById('summary-text').textContent = respObject["summary"];
                 document.getElementById('summary-box').style.display = 'block';
 
-
+                document.getElementById("summarybox").classList.remove("hidden");
                 return respObject["text"]
               })
             } else {
@@ -196,7 +200,8 @@
 
     function clearSummary() {
       document.getElementById('summary-text').textContent = "";
-      document.getElementById('clearSummaryBtn').style.display = 'none';
+      document.getElementById("summarybox").classList.add("hidden");
+
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
