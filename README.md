@@ -1,4 +1,4 @@
-# PARL: Process Analysis Real Time Language Application
+# PARL: Processing Analysis Real Time Language Application
 <p align="center">
 <img src="./images/Parlogo.png" style="width:40%; height:40%;">
 </p>
