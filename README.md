@@ -27,17 +27,24 @@ docker compose-up -d
 cd transcript
 python3 transcript.py
 ```
-6. Start the recording or upload the WAV file
-7. Enjoy!
-## ⚠️ Disclaimer
-if the ```docker compose``` doesn't work, run the container in this order:
+6. Open the server on the port ```8880```
+7. Start the recording or upload the WAV file
+8. Enjoy!
+## ⚠️ Disclaimer 
+If the ```docker compose``` doesn't work, run the container in this order:
 1. Zookeper
 2. Kafka
 3. Fluent Bit
 4. Elasticsearch
 5. Spark
 6. Kibana
-## 🎙️ Demo
+<br/> 
 
+If your browser doesn't support the [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition), change the browser... Unfortunately at the moment only Google Chrome (not Brave or other) seems to be working at its best.
+
+<br/> 
+After downloading the repository, before being able to start everything, it is necessary to change the various ports and IP addresses of the server. In some files, sections of code for localhost have been commented.
+
+## 🎙️ Demo
 ## 👥 License
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
