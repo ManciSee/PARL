@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>PARL: Process Analysis Real Time Language</title>
+  <title>PARL: Processing Analysis Real Time Language</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
   <!-- <link rel="stylesheet" href="../styles/styles.css"> -->
 </head>
@@ -12,7 +12,7 @@
   <div class="flex items-start justify-between w-full">
     <div>
       <h1 class="pt-32 font-extrabold text-4xl" style="color: #374c55;">PARL</h1>
-      <h3 class="pt-2 font-bold" style="color: #374c55;"> Process Analysis Real Time Language Application</h3>
+      <h3 class="pt-2 font-bold" style="color: #374c55;"> Processing Analysis Real Time Language Application</h3>
       <h3 class="pt-12 text-white" style="color: #374c55;">Version 1.0 - March 2023 - Github <a style="color: #5aab68;"
           class="text-blue-700" href="https://github.com/ManciSee/">@ManciSee</a>
       </h3>
@@ -209,6 +209,7 @@
       let recognition = new SpeechRecognition();
       let isRecording = false;
       let startTime, endTime;
+      let intervalId;
 
       recognition.continuous = true;
 
@@ -259,19 +260,23 @@
 
 
       recognition.onresult = event => {
-        let interimTranscript = ''
-        // console.log(event)
+        let interimTranscript = '';
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
-          interimTranscript += transcript;
-          console.log(interimTranscript)
-          document.getElementById("transcript").textContent = interimTranscript;
 
+          if (event.results[i].isFinal) {
+            transcriptParts.push(transcript);
+          } else {
+            interimTranscript += transcript;
+          }
         }
-      }
+
+        document.getElementById("transcript").textContent = interimTranscript;
+      };
 
       recognition.onend = function () {
-        debugger
+        //debugger
         endTime = new Date();
         const duration = (endTime - startTime) / 1000;
         if (isRecording) {
