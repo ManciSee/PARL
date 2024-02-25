@@ -1,7 +1,0 @@
-Generate 5 funny dog names, Before writing the name, insert a number like 'number.' before it, like this:
-
-1. Barky Boo Boo
-2. Puddles McPiddlepaws
-3. Sparky Snugglesworth
-4. Sir Woofsalot
-5. Fido Fluffball
