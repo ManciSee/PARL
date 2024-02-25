@@ -46,5 +46,17 @@ If your browser doesn't support the [Web Speech API](https://developer.mozilla.o
 After downloading the repository, before being able to start everything, it is necessary to change the various ports and IP addresses of the server. In some files, sections of code for localhost have been commented.
 
 ## 🎙️ Demo
+The first video demonstrates using the microphone for accurate voice transcriptions, while the second video showcases uploading a WAV file for a quick transcription. Both videos have been sped up for more efficient viewing. Remember to choose the appropriate Whisper model for your needs to optimize transcription based on your desired speed and accuracy.
+
+https://github.com/ManciSee/PARL/assets/80248296/aebb1bf7-8e0f-492c-b6f0-0c4071396603 
+
+
+
+https://github.com/ManciSee/PARL/assets/80248296/e354aa86-0944-4637-baa6-b2caae289e53
+
+
+
+
+
 ## 👥 License
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
