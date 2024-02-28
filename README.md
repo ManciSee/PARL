@@ -3,7 +3,7 @@
 <img src="./images/Parlogo.png" style="width:40%; height:40%;">
 </p>
 
-This project constitutes my bachelor's thesis in Computer Science at the University of Catania. "PARL" is an innovative solution aimed at enhancing the experience of speakers and listeners through real-time Speech to Text and advanced analysis of audio files. Implemented on a containerized distributed architecture with Docker, the platform leverages open-source technologies such as Kafka, Spark, Fluent Bit, Elasticsearch, and Kibana to optimize the process.
+This thesis represents my bachelor’s project in Computer Science at the University of Catania, focusing on the TAP course taught by Professor Salvatore Nicotra. “PARL” is an innovative solution aimed at enhancing the experience of speakers and listeners through real-time Speech to Text and advanced analysis of audio files. Implemented on a containerized distributed architecture with Docker, the platform leverages open-source technologies such as Kafka, Spark, Fluent Bit, Elasticsearch, and Kibana to optimize the process.
 
 "PARL" offers advanced features, including real-time Speech to Text with high accuracy, Topic Modeling, Sentiment Analysis, and Text Summarization. Targeted at a diverse audience, including professionals in the audiovisual industry, journalists, academic researchers, and businesses, the project promises to significantly improve the experience by utilizing stream processing tools. These tools enable real-time processing of audio signals and the execution of operations for text comprehension and analysis, opening new opportunities for semantic and sentiment analysis in the field of information and communication.
 ## ℹ️ How to use
