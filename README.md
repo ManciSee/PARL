@@ -28,7 +28,7 @@ cd transcript
 python3 transcript.py
 ```
 6. Open the server on the port ```8880```
-7. Start the recording or upload the WAV file
+7. Before starting the recording, choose the correct language in the html file or upload the WAV file
 8. Enjoy!
 ## ⚠️ Disclaimer 
 If the ```docker compose``` doesn't work, run the container in this order:
